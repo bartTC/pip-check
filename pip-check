@@ -1,0 +1,83 @@
+#!/usr/bin/env python
+
+from __future__ import unicode_literals
+
+import sys
+
+from colorclass import Color
+from terminaltables import SingleTable
+from pip.commands.list import ListCommand
+
+
+orig_stdout = sys.stdout
+
+out = orig_stdout.write
+err = sys.stderr.write
+
+i = 0
+options, args = ListCommand().parse_args([])
+package_list = ListCommand().find_packages_latest_versions(options)
+packages = {
+    'unknown': [],
+    'unchanged': [],
+    'minor': [],
+    'major': [],
+}
+
+for package, update, source in package_list:
+    i+=1
+    dots = '.' * i
+    orig_stdout.write('\rLoading packages{}'.format(dots))
+    orig_stdout.flush()
+    if (package.has_version() and update):
+        if package.parsed_version == update:
+            packages['unchanged'].append((package, update, source))
+            continue
+        try:
+            major_installed = package.parsed_version._version.release[0]
+            major_update = update._version.release[0]
+        except (AttributeError):
+            packages['unknown'].append((package, update, source))
+            continue
+
+        if major_update - major_installed >= 1:
+            packages['major'].append((package, update, source))
+            continue
+        else:
+            packages['minor'].append((package, update, source))
+            continue
+    else:
+        packages['unknown'].append((package, update, source))
+
+table_data = []
+
+def columns(package, update, source):
+    return [
+        package.project_name,
+        package.version,
+        update.public,
+        'https://pypi.python.org/pypi/{}'.format(package.project_name)
+    ]
+
+i = 0;
+for key, label, color in (
+    ('unchanged', 'Unchanged Packages', 'autogreen'),
+    ('minor', 'Minor Release Update', 'autoyellow'),
+    ('major', 'Major Release Update', 'autored'),
+    ('unknown', 'Unknown Package Release Status', 'autoblack'),
+):
+    if packages[key]:
+        table_data.append([])
+        colored_label = Color('{{{color}}}{label}{{/{color}}}'.format(
+            color=color,
+            label=label
+        ))
+        table_data[i].append([colored_label, 'Version', 'Latest']),
+        [table_data[i].append(columns(*p)) for p in packages[key]]
+    i += 1
+
+for data in table_data:
+    out('\n')
+    table = SingleTable(data)
+    out(table.table)
+    out('\n')
