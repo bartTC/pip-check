@@ -49,7 +49,7 @@ for package, update, source in package_list:
     else:
         packages['unknown'].append((package, update, source))
 
-table_data = []
+table_data = {}
 
 def columns(package, update, source):
     return [
@@ -67,16 +67,17 @@ for key, label, color in (
     ('unknown', 'Unknown Package Release Status', 'autoblack'),
 ):
     if packages[key]:
-        table_data.append([])
+        if not key in table_data:
+            table_data[key] = []
         colored_label = Color('{{{color}}}{label}{{/{color}}}'.format(
             color=color,
             label=label
         ))
-        table_data[i].append([colored_label, 'Version', 'Latest']),
-        [table_data[i].append(columns(*p)) for p in packages[key]]
+        table_data[key].append([colored_label, 'Version', 'Latest']),
+        [table_data[key].append(columns(*p)) for p in packages[key]]
     i += 1
 
-for data in table_data:
+for key, data in table_data.items():
     out('\n')
     table = SingleTable(data)
     out(table.table)
