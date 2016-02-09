@@ -54,8 +54,10 @@ table_data = {}
 def columns(package, update, source):
     return [
         package.project_name,
-        package.version,
-        update.public,
+        package.version if len(package.version) <= 10 else
+            '{}...'.format(package.version[:10]),
+        update.public if len(update.public) <= 10 else
+            '{}...'.format(update.public[:10]),
         'https://pypi.python.org/pypi/{}'.format(package.project_name)
     ]
 
