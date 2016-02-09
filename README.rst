@@ -23,5 +23,9 @@ Installation and Usage
 Changelog
 ---------
 
+v0.2 (2016-02-09):
+    - Fixes issues with older pip versions.
+    - Truncates extremly long version numbers.
+
 v0.1 (2016-02-06):
-    Very first version, and yet with very limited features.
+    - Very first version, and yet with very limited features.
