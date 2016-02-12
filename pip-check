@@ -15,8 +15,14 @@ out = orig_stdout.write
 err = sys.stderr.write
 
 i = 0
-options, args = ListCommand().parse_args([])
-package_list = ListCommand().find_packages_latest_versions(options)
+try:
+    options, args = ListCommand().parse_args([])
+    package_list = ListCommand().find_packages_latest_versions(options)
+except AttributeError:
+    sys.stderr.write("\npip-check needs pip installed in version 6 or later.\n"
+        "Please update your pip module.\n\n")
+    exit()
+
 packages = {
     'unknown': [],
     'unchanged': [],
