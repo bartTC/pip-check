@@ -17,8 +17,8 @@ err = sys.stderr.write
 def main():
 
     parser = argparse.ArgumentParser(description='A quick overview of all installed packages and their update status')
-    parser.add_argument('--ascii', action="store_true", dest='ascii_only', default=False)
-    parser.add_argument('-a', action="store_true", dest='ascii_only', default=False)
+    parser.add_argument('-a', '--ascii', action="store_true", dest='ascii_only', default=False,
+        help='Display as ASCII Table')
     results = parser.parse_args()
     if results.ascii_only:
         Table = terminaltables.AsciiTable
