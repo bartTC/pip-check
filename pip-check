@@ -1,107 +1,104 @@
 #!/usr/bin/env python
 
 from __future__ import unicode_literals
-import argparse
 import sys
+import argparse
+from pip.commands import ListCommand
+from pip.utils import get_installed_distributions
 
 from colorclass import Color
 import terminaltables
-from pip.commands.list import ListCommand
 
 
-orig_stdout = sys.stdout
+ORIG_STDOUT = sys.stdout
+OUT = ORIG_STDOUT.write
 
-out = orig_stdout.write
-err = sys.stderr.write
+FORMAT_CONFIG = [
+    ('unchanged', 'Unchanged Packages', 'autogreen'),
+    ('minor', 'Minor Release Update', 'autoyellow'),
+    ('major', 'Major Release Update', 'autored'),
+]
 
-def main():
 
-    parser = argparse.ArgumentParser(description='A quick overview of all installed packages and their update status')
-    parser.add_argument('-a', '--ascii', action="store_true", dest='ascii_only', default=False,
-        help='Display as ASCII Table')
-    results = parser.parse_args()
-    if results.ascii_only:
-        Table = terminaltables.AsciiTable
-    else:
-        Table = terminaltables.SingleTable
+def classify_packages(packages):
+    options, _ = ListCommand().parse_args([])
+    outdated_packages = ListCommand().get_outdated(packages, options)
+    uptodated_packages = ListCommand().get_uptodate(packages, options)
 
-    i = 0
-    try:
-        options, args = ListCommand().parse_args([])
-        package_list = ListCommand().find_packages_latest_versions(options)
-    except AttributeError:
-        sys.stderr.write("\npip-check needs pip installed in version 6 or later.\n"
-            "Please update your pip module.\n\n")
-        exit()
-
-    packages = {
-        'unknown': [],
-        'unchanged': [],
+    classified_packages = {
+        'unchanged': uptodated_packages,
         'minor': [],
         'major': [],
     }
-
-    for package, update, source in package_list:
-        i+=1
-        dots = '.' * i
-        orig_stdout.write('\rLoading packages{}'.format(dots))
-        orig_stdout.flush()
-        if (package.has_version() and update):
-            if package.parsed_version == update:
-                packages['unchanged'].append((package, update, source))
-                continue
-            try:
-                major_installed = package.parsed_version._version.release[0]
-                major_update = update._version.release[0]
-            except (AttributeError):
-                packages['unknown'].append((package, update, source))
-                continue
-
-            if major_update - major_installed >= 1:
-                packages['major'].append((package, update, source))
-                continue
-            else:
-                packages['minor'].append((package, update, source))
-                continue
+    for package in outdated_packages:
+        current_major_version = int(package.parsed_version.public.split('.')[0])
+        latest_major_version = int(package.latest_version.public.split('.')[0])
+        if latest_major_version - current_major_version > 0:
+            classified_packages['major'].append(package)
         else:
-            packages['unknown'].append((package, update, source))
+            classified_packages['minor'].append(package)
+    return classified_packages
 
-    table_data = {}
 
-    def columns(package, update, source):
+def show_packages_in_table(packages, table_type):
+    def prune_version(version_str, max_length=10):
+        return (version_str if len(version_str) <= max_length
+                else '{}...'.format(version_str[:max_length]))
+
+    def columns(package):
         return [
             package.project_name,
-            package.version if len(package.version) <= 10 else
-                '{}...'.format(package.version[:10]),
-            update.public if len(update.public) <= 10 else
-                '{}...'.format(update.public[:10]),
+            prune_version(package.version),
+            prune_version(package.latest_version.base_version),
             'https://pypi.python.org/pypi/{}'.format(package.project_name)
         ]
 
-    i = 0;
-    for key, label, color in (
-        ('unchanged', 'Unchanged Packages', 'autogreen'),
-        ('minor', 'Minor Release Update', 'autoyellow'),
-        ('major', 'Major Release Update', 'autored'),
-        ('unknown', 'Unknown Package Release Status', 'autoblack'),
-    ):
+    table_data = {}
+    for key, label, color in FORMAT_CONFIG:
         if packages[key]:
-            if not key in table_data:
-                table_data[key] = []
+            if key not in table_data:
+                table_data[key] = list()
             colored_label = Color('{{{color}}}{label}{{/{color}}}'.format(
                 color=color,
                 label=label
             ))
-            table_data[key].append([colored_label, 'Version', 'Latest']),
-            [table_data[key].append(columns(*p)) for p in packages[key]]
-        i += 1
+            table_data[key].append([colored_label, 'Version', 'Latest'])
+            for package in packages[key]:
+                table_data[key].append(columns(package))
 
     for key, data in table_data.items():
-        out('\n')
-        table = Table(data)
-        out(table.table)
-        out('\n')
+        OUT('\n')
+        table = table_type(data)
+        OUT(table.table)
+        OUT('\n')
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='A quick overview of all installed packages and their update status'
+    )
+    parser.add_argument(
+        '-a', '--ascii',
+        action="store_true", dest='ascii_only', default=False,
+        help='Display as ASCII Table'
+    )
+    results = parser.parse_args()
+    if results.ascii_only:
+        table_type = terminaltables.AsciiTable
+    else:
+        table_type = terminaltables.SingleTable
+
+    packages = get_installed_distributions()
+    try:
+        classified_packages = classify_packages(packages)
+    except AttributeError:
+        OUT(
+            "\npip-check needs pip installed in version 9 or later.\n"
+            "Please update your pip module.\n\n"
+        )
+
+    show_packages_in_table(classified_packages, table_type)
+
 
 if __name__ == '__main__':
     main()
-
