@@ -31,6 +31,9 @@ Usage::
     # Some packages have ridiculous long versions. To show them:
     $ pip-check --full-version
 
+    # Do not show packages where their version is up to date:
+    $ pip-check --hide-unchanged
+
 """
 from __future__ import unicode_literals
 

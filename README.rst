@@ -8,7 +8,7 @@ and transforms it into a more user friendly table.
 
 .. important:: Requires ``pip`` Version 9 or higher!
 
-.. image:: http://d.pr/i/1e7wJ.png
+.. image:: https://d.pr/i/ZDPuw5.png
 
 
 Installation::
