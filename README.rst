@@ -41,8 +41,9 @@ Usage::
 Changelog
 ---------
 
-v2.2 (2018-02-18):
-    - New command ``--show-update``
+v2.3.2 (2018-02-18):
+    - New ``--show-update`` argument.
+    - Fixed ``--full-versions`` argument.
     - Minor UI improvements.
 
 v2.1 (2018-02-18):
