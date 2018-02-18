@@ -38,9 +38,11 @@ Usage::
 Changelog
 ---------
 
-v2.0 (2018-02-18):
+v2.1 (2018-02-18):
     - Complete new architecture. It now calls ``pip`` directly and parses
       it output which should be more reliable.
+    - It's also using distutils for the version comparision now, which is
+      more reliable as well.
     - Lots of features and bug fixes.
 
 v0.2 (2016-02-09):

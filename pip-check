@@ -35,11 +35,12 @@ Usage::
 from __future__ import unicode_literals
 
 import argparse
+import json
 import re
 import subprocess
 import sys
-import json
 from collections import OrderedDict
+from distutils.version import LooseVersion
 
 import colorclass
 import terminaltables
@@ -202,11 +203,13 @@ def main():
             packages['unknown'].append(package)
             continue
 
-        def versiontuple(v):
-            return tuple(map(int, (v.split('.'))))
-
-        latest = versiontuple(package['latest_version'])
-        current = versiontuple(package['version'])
+        try:
+            latest = LooseVersion(package['latest_version'])
+            current = LooseVersion(package['version'])
+        except ValueError:
+            # Unable to parse the version into anything useful
+            packages['unknown'].append(package)
+            continue
 
         # If the current version is larger than the latest
         # (e.g. a pre-release is installed) put it into the unknown section.
@@ -223,7 +226,7 @@ def main():
             continue
 
         # Major upgrade (first version number)
-        if latest[0] > current[0]:
+        if latest.version[0] > current.version[0]:
             packages['major'].append(package)
             continue
 

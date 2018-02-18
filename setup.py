@@ -9,7 +9,7 @@ long_description = u'\n\n'.join((
 
 setup(
     name='pip-check',
-    version='2.0',
+    version='2.1',
     description='Display installed pip packages and their update status..',
     long_description=long_description,
     author='Martin Mahner',
@@ -24,7 +24,7 @@ setup(
     install_requires=[
         'terminaltables',
         'colorclass',
-        'six',
+        'distutils',
     ],
     tests_require=[
     ],
