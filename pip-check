@@ -154,7 +154,7 @@ def main():
         '-c', '--cmd',
         dest='pip_cmd',
         default=pip_cmd,
-        help='The pip command to run. Default: pip'
+        help='The pip executable to run. Default: `pip`'
     )
     parser.add_argument(
         '-r', '--not-required',
@@ -300,8 +300,9 @@ def main():
         for label in ('major', 'minor'):
             if packages[label]:
                 out('\nTo update all major releases run:\n\n'
-                    '  pip install -U {0}\n'.format(
-                        ' '.join([p['name'] for p in packages[label]])
+                    '  {pip_cmd} install -U {packages}\n'.format(
+                        pip_cmd=options.pip_cmd,
+                        packages=' '.join([p['name'] for p in packages[label]])
                 ))
 
 
