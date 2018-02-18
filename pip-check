@@ -42,6 +42,7 @@ import json
 import re
 import subprocess
 import sys
+import textwrap
 from collections import OrderedDict
 from distutils.version import LooseVersion
 
@@ -115,9 +116,6 @@ def get_package_versions(options, outdated=True):
 
         pip list [--outdated|--uptodate] --format=json [--not-required]
     """
-    sys.stdout.write('\rLoading package versions...')
-    sys.stdout.flush()
-
     cmd = check_cmd.format(
         pip_cmd=options.pip_cmd,
         arg=pip_outdated_arg if outdated else pip_uptodate_arg,
@@ -173,11 +171,18 @@ def main():
         help='Show full version strings.'
     )
     parser.add_argument(
-        '-u', '--hide-unchanged',
+        '-H', '--hide-unchanged',
         action="store_true",
         dest='hide_unchanged',
         default=False,
         help='Do not show "unchanged" packages.'
+    )
+    parser.add_argument(
+        '-u', '--show-update',
+        action="store_true",
+        dest='show_update',
+        default=False,
+        help='Show update instructions for updatable packages.'
     )
     options = parser.parse_args()
 
@@ -185,6 +190,9 @@ def main():
     check_pip_version(options)
 
     # --------------------------------------------------------------------------
+
+    sys.stdout.write('Loading package versions...\n')
+    sys.stdout.flush()
 
     # Unchanged Packages
     unchanged = []
@@ -286,6 +294,16 @@ def main():
         table = Table(data)
         out(table.table)
         out('\n')
+        sys.stdout.flush()
+
+    if options.show_update:
+        for label in ('major', 'minor'):
+            if packages[label]:
+                out('\nTo update all major releases run:\n\n'
+                    '  pip install -U {0}\n'.format(
+                        ' '.join([p['name'] for p in packages[label]])
+                ))
+
 
 # ------------------------------------------------------------------------------
 

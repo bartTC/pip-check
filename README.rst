@@ -35,8 +35,15 @@ Usage::
     # Do not show packages where their version is up to date:
     $ pip-check --hide-unchanged
 
+    # Show the pip command to update all major/minor packages
+    $ pip-check --show-update
+
 Changelog
 ---------
+
+v2.2 (2018-02-18):
+    - New command ``--show-update``
+    - Minor UI improvements.
 
 v2.1 (2018-02-18):
     - Complete new architecture. It now calls ``pip`` directly and parses
