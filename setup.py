@@ -24,9 +24,6 @@ setup(
     install_requires=[
         'terminaltables',
         'colorclass',
+        'pip>=9',
     ],
-    tests_require=[
-    ],
-    cmdclass={
-    },
 )
