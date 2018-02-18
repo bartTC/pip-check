@@ -248,7 +248,8 @@ def main():
 
     def cut_version(version):
         # Cut version to readable length
-        if len(version) > version_length + 3:
+        if (not options.show_long_versions and
+                len(version) > version_length + 3):
             return '{0}...'.format(version[:version_length])
         return version
 
