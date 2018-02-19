@@ -256,6 +256,11 @@ def main():
     def columns(package):
         # Generate the columsn for the table(s) for each package
         # Name | Latest Version | Current Version | pypi String
+        help_string = 'https://pypi.python.org/pypi/{}'.format(package['name'])
+        if 'latest_version' in package and options.show_update:
+            help_string = 'pip install {name}=={version}'.format(
+                name=package['name'], version=package['latest_version'])
+
         return [
             package['name'],
 
@@ -263,9 +268,11 @@ def main():
                 if 'version' in package else 'Unknown',
 
             cut_version(package['latest_version'])
-                if 'latest_version' in package else '-',
+                if 'latest_version' in package else
+            cut_version(package['version'])
+                if 'version' in package else 'Unknown',
 
-            'https://pypi.python.org/pypi/{}'.format(package['name'])
+            help_string
         ]
 
     for key, label, color in [
@@ -300,8 +307,9 @@ def main():
     if options.show_update:
         for label in ('major', 'minor'):
             if packages[label]:
-                out('\nTo update all major releases run:\n\n'
+                out('\nTo update all {label} releases run:\n\n'
                     '  {pip_cmd} install -U {packages}\n'.format(
+                        label=label,
                         pip_cmd=options.pip_cmd,
                         packages=' '.join([p['name'] for p in packages[label]])
                 ))
