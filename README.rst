@@ -40,7 +40,9 @@ Usage::
 
 Changelog
 ---------
-
+v2.3.4 (2019-02-04)
+    - Fix for windows using
+    
 v2.3.3 (2018-02-19):
     - Visual fixes around ``--show-update``
 
