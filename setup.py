@@ -20,7 +20,7 @@ setup(
     packages=find_packages(),
     package_data={},
     include_package_data=True,
-    scripts = ['pip-check'],
+    scripts = ['pip-check.py'],
     install_requires=[
         'terminaltables',
         'colorclass',
