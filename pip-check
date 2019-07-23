@@ -34,6 +34,9 @@ Usage::
     # Do not show packages where their version is up to date:
     $ pip-check --hide-unchanged
 
+    # Do not show packages that are installed system-wide
+    $ pip-check --user
+
 """
 from __future__ import unicode_literals
 
@@ -42,7 +45,6 @@ import json
 import re
 import subprocess
 import sys
-import textwrap
 from collections import OrderedDict
 from distutils.version import LooseVersion
 
@@ -67,8 +69,9 @@ pip_cmd = 'pip'
 pip_uptodate_arg = '--uptodate'
 pip_outdated_arg = '--outdated'
 pip_not_required_arg = '--not-required'
+pip_user_arg = '--user'
 
-check_cmd = '{pip_cmd} list {arg} --format=json {notreq_arg}'
+check_cmd = '{pip_cmd} list {arg} --format=json {notreq_arg} {user_arg}'
 
 # Some pip packages such as pycryptopp have ridiculous long version
 # # 0.6.0.1206569328141510525648634803928199668821045408958
@@ -114,12 +117,13 @@ def get_package_versions(options, outdated=True):
     """
     Retrieve a list of outdated packages from pip. Calls:
 
-        pip list [--outdated|--uptodate] --format=json [--not-required]
+        pip list [--outdated|--uptodate] --format=json [--not-required] [--user]
     """
     cmd = check_cmd.format(
         pip_cmd=options.pip_cmd,
         arg=pip_outdated_arg if outdated else pip_uptodate_arg,
-        notreq_arg=pip_not_required_arg if options.pip_not_required else ''
+        notreq_arg=pip_not_required_arg if options.pip_not_required else '',
+        user_arg=pip_user_arg if options.show_user else ''
     )
     cmd_response = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
     cmd_response_string = cmd_response.stdout.read().decode('utf-8').strip()
@@ -183,6 +187,13 @@ def main():
         dest='show_update',
         default=False,
         help='Show update instructions for updatable packages.'
+    )
+    parser.add_argument(
+        '-U', '--user',
+        action="store_true",
+        dest='show_user',
+        default=False,
+        help='Show only user installed packages.'
     )
     options = parser.parse_args()
 
