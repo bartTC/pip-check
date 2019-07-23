@@ -45,8 +45,8 @@ Usage::
 Changelog
 ---------
 
-(master)
-    - Added support to only show packages from the `user` or `local`
+v2.4 (2019-07-23):
+    - Added support to only show packages from the ``user`` or ``local``
       package namespace.
 
 v2.3.3 (2018-02-19):
