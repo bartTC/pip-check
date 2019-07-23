@@ -19,13 +19,13 @@ Usage::
     $ pip-check
 
     # If your terminal does not support the table lines,
-    # you can show an ASCII table
+    # you can show an ASCII table:
     $ pip-check --ascii
 
-    # You can specify the pip executable
+    # You can specify the pip executable:
     $ pip-check --cmd=pip3
 
-    # List only packages that are not dependencies of installed packages.
+    # List only packages that are not dependencies of installed packages:
     $ pip-check --not-required
 
     # Some packages have ridiculous long versions. To show them:
@@ -34,10 +34,10 @@ Usage::
     # Do not show packages where their version is up to date:
     $ pip-check --hide-unchanged
 
-    # Do not show packages that are installed system-wide
+    # Show only packages which were installed in the user space:
     $ pip-check --user
 
-    # Do not show packages that are installed outside the current virtualenv
+    # Do not show packages that are installed outside the current virtualenv:
     $ pip-check --local
 
 
