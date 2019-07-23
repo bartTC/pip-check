@@ -15,31 +15,39 @@ Installation::
 
     pip install pip-check
 
+
 Usage::
 
     $ pip-check
 
     # If your terminal does not support the table lines,
-    # you can show an ASCII table
+    # you can show an ASCII table:
     $ pip-check --ascii
 
-    # You can specify the pip executable
+    # You can specify the pip executable:
     $ pip-check --cmd=pip3
 
-    # List only packages that are not dependencies of installed packages.
+    # List only packages that are not dependencies of installed packages:
     $ pip-check --not-required
 
-    # Some packages have ridiculous long versions. To admire them:
+    # Some packages have ridiculous long versions. To show them:
     $ pip-check --full-version
 
     # Do not show packages where their version is up to date:
     $ pip-check --hide-unchanged
 
-    # Show the pip command to update all major/minor packages
-    $ pip-check --show-update
+    # Show only packages which were installed in the user space:
+    $ pip-check --user
+
+    # Do not show packages that are installed outside the current virtualenv:
+    $ pip-check --local
 
 Changelog
 ---------
+
+(master)
+    - Added support to only show packages from the `user` or `local`
+      package namespace.
 
 v2.3.3 (2018-02-19):
     - Visual fixes around ``--show-update``
