@@ -15,35 +15,37 @@ Installation::
 
     pip install pip-check
 
-
 Usage::
 
-    $ pip-check
+    $ pip-check -h
+    usage: pip-check [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U]
 
-    # If your terminal does not support the table lines,
-    # you can show an ASCII table:
-    $ pip-check --ascii
+    A quick overview of all installed packages and their update status.
 
-    # You can specify the pip executable:
-    $ pip-check --cmd=pip3
+    optional arguments:
+      -h, --help            show this help message and exit
+      -a, --ascii           Display as ASCII Table
+      -c PIP_CMD, --cmd PIP_CMD
+                            The pip executable to run. Default: `pip`
+      -l, --local           Show only virtualenv installed packages.
+      -r, --not-required    List only packages that are not dependencies of
+                            installed packages.
+      -f, --full-version    Show full version strings.
+      -H, --hide-unchanged  Do not show "unchanged" packages.
+      -u, --show-update     Show update instructions for updatable packages.
+      -U, --user            Show only user installed packages.
 
-    # List only packages that are not dependencies of installed packages:
-    $ pip-check --not-required
+Testing::
 
-    # Some packages have ridiculous long versions. To show them:
-    $ pip-check --full-version
-
-    # Do not show packages where their version is up to date:
-    $ pip-check --hide-unchanged
-
-    # Show only packages which were installed in the user space:
-    $ pip-check --user
-
-    # Do not show packages that are installed outside the current virtualenv:
-    $ pip-check --local
+    $ pip install tox tox-pyenv
+    $ tox
 
 Changelog
 ---------
+
+v2.4.1 (master)
+    - Cleanup of the entire codebase.
+    - Added tests for Python 3.7 and 3.8.
 
 v2.4 (2019-07-23):
     - Added support to only show packages from the ``user`` or ``local``
