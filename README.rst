@@ -1,3 +1,8 @@
+.. image:: https://travis-ci.org/bartTC/pip-check.svg?branch=master
+    :target: https://travis-ci.org/bartTC/pip-check
+
+-----
+
 =========
 pip-check
 =========
