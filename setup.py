@@ -9,7 +9,7 @@ long_description = u'\n\n'.join((
 
 setup(
     name='pip-check',
-    version='2.5',
+    version='2.5.1a0',
     description='Display installed pip packages and their update status..',
     long_description=long_description,
     author='Martin Mahner',
@@ -17,10 +17,12 @@ setup(
     url='https://github.com/bartTC/pip-check/',
     classifiers=[
     ],
-    packages=find_packages(),
+    package_dir={"": "src"},
+    packages=find_packages(
+        where="src",
+    ),
     package_data={},
     include_package_data=True,
-    scripts=['pip_check.py'],
     entry_points={'console_scripts': [
         'pip-check = pip_check:main',
     ]},
