@@ -45,6 +45,15 @@ Testing::
     $ pip install tox tox-pyenv
     $ tox
 
+Recommeded Similar Tools
+------------------------
+
+- `pip-date`_ - Show the installation or modification times of all your pip packages
+- `pip-chill`_ - Lists only the dependencies (or not) of installed packages
+
+.. _pip-date: https://github.com/E3V3A/pip-date
+.. _pip-chill: https://github.com/rbanffy/pip-chill
+
 Changelog
 ---------
 
