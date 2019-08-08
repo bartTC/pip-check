@@ -48,32 +48,42 @@ Testing::
 Changelog
 ---------
 
-v2.4.1 (master)
-    - Cleanup of the entire codebase.
-    - Added tests for Python 3.7 and 3.8.
+v2.5 (2019-08-08):
+
+- A more robust installation that installs pip-check as a proper console script.
+- Added new ``--disable-colors`` argument.
+- Added tests for Python 3.7 and 3.8.
+- Fixed Syntax warning happening with no outdated packages.
+- Cleanup of the entire codebase.
 
 v2.4 (2019-07-23):
-    - Added support to only show packages from the ``user`` or ``local``
-      package namespace.
+
+- Added support to only show packages from the ``user`` or ``local`` package
+  namespace.
 
 v2.3.3 (2018-02-19):
-    - Visual fixes around ``--show-update``
+
+- Visual fixes around ``--show-update``
 
 v2.3.2 (2018-02-18):
-    - New ``--show-update`` argument.
-    - Fixed ``--full-versions`` argument.
-    - Minor UI improvements.
+
+- New ``--show-update`` argument.
+- Fixed ``--full-versions`` argument.
+- Minor UI improvements.
 
 v2.1 (2018-02-18):
-    - Complete new architecture. It now calls ``pip`` directly and parses
-      it output which should be more reliable.
-    - It's also using distutils for the version comparision now, which is
-      more reliable as well.
-    - Lots of features and bug fixes.
+
+- Complete new architecture. It now calls ``pip`` directly and parses it output
+  which should be more reliable.
+- It's also using distutils for the version comparision now, which is more
+  reliable as well.
+- Lots of features and bug fixes.
 
 v0.2 (2016-02-09):
-    - Fixes issues with older pip versions.
-    - Truncates extremly long version numbers.
+
+- Fixes issues with older pip versions.
+- Truncates extremly long version numbers.
 
 v0.1 (2016-02-06):
-    - Very first version, and yet with very limited features.
+
+- Very first version, and yet with very limited features.

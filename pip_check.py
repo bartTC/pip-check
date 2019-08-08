@@ -84,6 +84,19 @@ err = sys.stderr.write
 # ------------------------------------------------------------------------------
 
 
+def set_color(options, text, color):
+    """
+    Little wrapper around Color() to dynamically disable it on demand.
+    """
+    if options.disable_colors:
+        return text
+
+    colorclass.Windows.enable(auto_colors=True, reset_atexit=True)
+    label = "{{{color}}}{text}{{/{color}}}".format(text=text, color=color)
+    print(label)
+    return colorclass.Color(label)
+
+
 def check_pip_version(options):
     """
     Make sure minimum pip version is met.
@@ -137,7 +150,7 @@ def get_package_versions(options, outdated=True):
     cmd_response_string = cmd_response.stdout.read().decode("utf-8").strip()
 
     if not cmd_response_string:
-        err("No outdated packages. \o/")
+        err("No outdated packages. \\o/")
         sys.exit(0)
 
     try:
@@ -219,6 +232,13 @@ def main():
         dest="show_user",
         default=False,
         help="Show only user installed packages.",
+    )
+    parser.add_argument(
+        "--disable-colors",
+        action="store_true",
+        dest="disable_colors",
+        default=False,
+        help="Disable coloring of text and tables.",
     )
     options = parser.parse_args()
 
@@ -325,11 +345,7 @@ def main():
             if not key in table_data:
                 table_data[key] = []
 
-            colored_label = colorclass.Color(
-                "{{{color}}}{label}{{/{color}}}".format(
-                    color=color, label=label
-                )
-            )
+            colored_label = set_color(options, label, color)
 
             table_data[key].append([colored_label, "Version", "Latest"]),
             for package in packages[key]:
