@@ -57,6 +57,10 @@ Recommeded Similar Tools
 Changelog
 ---------
 
+v2.5.2 (2019-08-08):
+
+- Windows color fixes.
+
 v2.5.1 (2019-08-08):
 
 - Windows script fixes.
