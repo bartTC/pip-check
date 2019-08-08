@@ -74,12 +74,22 @@ check_cmd = (
 
 # Some pip packages such as pycryptopp have ridiculous long version
 # # 0.6.0.1206569328141510525648634803928199668821045408958
-# which messes up our table. Can be overridden with -f.
+# which messes up the table. These are capped by default to 10 characters.
+# Can be overridden with -f.
 version_length = 10
 
-# Shortcuts for
-out = sys.stdout.write
+# Text IO
+def windows_out(text):
+    """
+    Custom stdout for Windows. The colorClass enabler needs
+    to be set before every single line.
+    """
+    colorclass.Windows.enable(auto_colors=True, reset_atexit=True)
+    sys.stdout.write(text)
+
+
 err = sys.stderr.write
+out = windows_out if sys.platform == "win32" else sys.stdout.write
 
 # ------------------------------------------------------------------------------
 
@@ -91,7 +101,6 @@ def set_color(options, text, color):
     if options.disable_colors:
         return text
 
-    colorclass.Windows.enable(auto_colors=True, reset_atexit=True)
     return colorclass.Color(
         "{{{color}}}{text}{{/{color}}}".format(text=text, color=color)
     )
