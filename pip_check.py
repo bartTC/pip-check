@@ -92,9 +92,9 @@ def set_color(options, text, color):
         return text
 
     colorclass.Windows.enable(auto_colors=True, reset_atexit=True)
-    label = "{{{color}}}{text}{{/{color}}}".format(text=text, color=color)
-    print(label)
-    return colorclass.Color(label)
+    return colorclass.Color(
+        "{{{color}}}{text}{{/{color}}}".format(text=text, color=color)
+    )
 
 
 def check_pip_version(options):
