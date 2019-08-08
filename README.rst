@@ -48,6 +48,10 @@ Testing::
 Changelog
 ---------
 
+v2.5.1 (2019-08-08):
+
+- Windows script fixes.
+
 v2.5 (2019-08-08):
 
 - A more robust installation that installs pip-check as a proper console script.
