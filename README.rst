@@ -64,7 +64,7 @@ Recommeded Similar Tools
 Changelog
 ---------
 
-v2.6 (201-12-12):
+v2.6 (2019-12-12):
 
 - Requires Python 3.5 or higher.
 - Command error is shown if pip exits with a status code 1 (or larger).
