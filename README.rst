@@ -17,7 +17,7 @@ Installation::
 
     pip install pip-check
 
-The last version that runs on Python 2.7 is v2.5.2. Install it with::
+The last version that runs on Python 2.7 or 3.4 is v2.5.2. Install it with::
 
     pip install pip-check==2.5.2
 
