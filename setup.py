@@ -9,7 +9,7 @@ long_description = u'\n\n'.join((
 
 setup(
     name='pip-check',
-    version='2.5.2',
+    version='2.6',
     description='Display installed pip packages and their update status..',
     long_description=long_description,
     author='Martin Mahner',
@@ -26,6 +26,7 @@ setup(
     entry_points={'console_scripts': [
         'pip-check = pip_check:main',
     ]},
+    python_requires=">=3.5",
     install_requires=[
         'terminaltables',
         'colorclass',

@@ -17,7 +17,8 @@ Installation::
 Usage::
 
     $ pip-check -h
-    usage: pip-check [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U]
+
+    usage: pip-check [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U] [--disable-colors]
 
     A quick overview of all installed packages and their update status.
 
@@ -27,12 +28,12 @@ Usage::
       -c PIP_CMD, --cmd PIP_CMD
                             The pip executable to run. Default: `pip`
       -l, --local           Show only virtualenv installed packages.
-      -r, --not-required    List only packages that are not dependencies of
-                            installed packages.
+      -r, --not-required    List only packages that are not dependencies of installed packages.
       -f, --full-version    Show full version strings.
       -H, --hide-unchanged  Do not show "unchanged" packages.
       -u, --show-update     Show update instructions for updatable packages.
       -U, --user            Show only user installed packages.
+      --disable-colors      Disable coloring of text and tables.
 """
 from __future__ import unicode_literals
 
@@ -68,9 +69,7 @@ pip_not_required_arg = "--not-required"
 pip_user_arg = "--user"
 pip_local_arg = "--local"
 
-check_cmd = (
-    "{pip_cmd} list {arg} --format=json {notreq_arg} {user_arg} {local_arg}"
-)
+check_cmd = "{pip_cmd} list {arg} --retries=1 --disable-pip-version-check --format=json {notreq_arg} {user_arg} {local_arg}"
 
 # Some pip packages such as pycryptopp have ridiculous long version
 # # 0.6.0.1206569328141510525648634803928199668821045408958
@@ -112,8 +111,23 @@ def check_pip_version(options):
     """
     cmd = "{pip_cmd} --version".format(pip_cmd=options.pip_cmd)
 
-    cmd_response = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    cmd_response_string = cmd_response.stdout.read().decode("utf-8").strip()
+    try:
+        cmd_response = subprocess.run(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        err(
+            "The pip command did not succeed: {stderr}".format(
+                stderr=e.stderr.decode("utf-8")
+            )
+        )
+        sys.exit(1)
+
+    cmd_response_string = cmd_response.stdout.decode("utf-8").strip()
 
     if not cmd_response_string:
         err(
@@ -155,8 +169,32 @@ def get_package_versions(options, outdated=True):
         user_arg=pip_user_arg if options.show_user else "",
         local_arg=pip_local_arg if options.show_local else "",
     )
-    cmd_response = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE)
-    cmd_response_string = cmd_response.stdout.read().decode("utf-8").strip()
+    try:
+        cmd_response = subprocess.run(
+            cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+
+    except subprocess.CalledProcessError as e:
+        err(
+            "The pip command did not succeed: {stderr}".format(
+                stderr=e.stderr.decode("utf-8")
+            )
+        )
+        sys.exit(1)
+
+    # The pip command exited with 0 but we have stderr content:
+    if cmd_response.stderr:
+        if "NewConnectionError" in cmd_response.stderr.decode("utf-8").strip():
+            err(
+                "\npip indicated that it has connection problems. "
+                "Please check your network."
+            )
+            sys.exit(1)
+
+    cmd_response_string = cmd_response.stdout.decode("utf-8").strip()
 
     if not cmd_response_string:
         err("No outdated packages. \\o/")
@@ -164,7 +202,7 @@ def get_package_versions(options, outdated=True):
 
     try:
         pip_packages = json.loads(cmd_response_string)
-    except Exception as e:  # Py2 raises ValueError, Py3 JSONEexception
+    except Exception:  # Py2 raises ValueError, Py3 JSONEexception
         err(
             "Unable to parse the version list from pip. "
             "Does `pip list --format=json` work for you?"
@@ -316,10 +354,7 @@ def main():
             return version
 
         # Cut version to readable length
-        if (
-            not options.show_long_versions
-            and len(version) > version_length + 3
-        ):
+        if not options.show_long_versions and len(version) > version_length + 3:
             return "{0}...".format(version[:version_length])
         return version
 
@@ -333,8 +368,10 @@ def main():
         help_string = "https://pypi.python.org/pypi/{}".format(package["name"])
 
         if latest_version and options.show_update:
-            help_string = "pip install {name}=={version}".format(
-                name=name, version=latest_version
+            help_string = "pip install {user}{name}=={version}".format(
+                user="--user " if options.show_user == True else "",
+                name=name,
+                version=latest_version,
             )
 
         return [
@@ -379,12 +416,11 @@ def main():
             if packages[label]:
                 out(
                     "\nTo update all {label} releases run:\n\n"
-                    "  {pip_cmd} install -U {packages}\n".format(
+                    "  {pip_cmd} install --upgrade {user}{packages}\n".format(
                         label=label,
                         pip_cmd=options.pip_cmd,
-                        packages=" ".join(
-                            [p["name"] for p in packages[label]]
-                        ),
+                        user="--user " if options.show_user == True else "",
+                        packages=" ".join([p["name"] for p in packages[label]]),
                     )
                 )
 

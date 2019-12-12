@@ -11,14 +11,15 @@ pip-check gives you a quick overview of all installed packages and their
 update status. Under the hood it calls ``pip list --outdated --format=columns``
 and transforms it into a more user friendly table.
 
-.. important:: Requires ``pip`` Version 9 or higher!
-
 .. image:: https://d.pr/i/ZDPuw5.png
-
 
 Installation::
 
     pip install pip-check
+
+The last version that runs on Python 2.7 is v2.5.2. Install it with::
+
+    pip install pip-check==2.5.2
 
 Usage::
 
@@ -40,10 +41,16 @@ Usage::
       -u, --show-update     Show update instructions for updatable packages.
       -U, --user            Show only user installed packages.
 
-Testing::
+Testing:
+
+Test against a variation of Python versions::
 
     $ pip install tox tox-pyenv
     $ tox
+
+Test against your current Python version::
+
+    $ python setup.py test
 
 Recommeded Similar Tools
 ------------------------
@@ -57,8 +64,19 @@ Recommeded Similar Tools
 Changelog
 ---------
 
+v2.6 (201-12-12):
+
+- Requires Python 3.5 or higher.
+- Command error is shown if pip exits with a status code 1 (or larger).
+- Error message is shown if pip is not able to load packages in case of 
+  network problems.
+- Update instructions will now add ``--user`` in case the pip-check command 
+  should only show user packages as well. 
+
 v2.5.2 (2019-08-08):
 
+- This is the last version that runs on Python 2.7. Install it with
+  ``pip install pip-check==2.5.2``
 - Windows color fixes.
 
 v2.5.1 (2019-08-08):
