@@ -45,7 +45,6 @@ import sys
 from collections import OrderedDict
 from distutils.version import LooseVersion
 
-import colorclass
 import terminaltables
 
 # ------------------------------------------------------------------------------
@@ -77,32 +76,10 @@ check_cmd = "{pip_cmd} list {arg} --retries=1 --disable-pip-version-check --form
 # Can be overridden with -f.
 version_length = 10
 
-# Text IO
-def windows_out(text):
-    """
-    Custom stdout for Windows. The colorClass enabler needs
-    to be set before every single line.
-    """
-    colorclass.Windows.enable(auto_colors=True, reset_atexit=True)
-    sys.stdout.write(text)
-
-
 err = sys.stderr.write
-out = windows_out if sys.platform == "win32" else sys.stdout.write
+out = sys.stdout.write
 
 # ------------------------------------------------------------------------------
-
-
-def set_color(options, text, color):
-    """
-    Little wrapper around Color() to dynamically disable it on demand.
-    """
-    if options.disable_colors:
-        return text
-
-    return colorclass.Color(
-        "{{{color}}}{text}{{/{color}}}".format(text=text, color=color)
-    )
 
 
 def check_pip_version(options):
@@ -171,10 +148,7 @@ def get_package_versions(options, outdated=True):
     )
     try:
         cmd_response = subprocess.run(
-            cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE
+            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
 
     except subprocess.CalledProcessError as e:
@@ -391,17 +365,13 @@ def main():
             if not key in table_data:
                 table_data[key] = []
 
-            colored_label = set_color(options, label, color)
-
-            table_data[key].append([colored_label, "Version", "Latest"]),
+            table_data[key].append([label, "Version", "Latest"]),
             for package in packages[key]:
                 table_data[key].append(columns(package))
 
     # Table output class
     Table = (
-        terminaltables.AsciiTable
-        if options.ascii_only
-        else terminaltables.SingleTable
+        terminaltables.AsciiTable if options.ascii_only else terminaltables.SingleTable
     )
 
     for key, data in table_data.items():
