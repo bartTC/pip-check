@@ -18,7 +18,7 @@ Usage::
 
     $ pip-check -h
 
-    usage: pip-check [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U] [--disable-colors]
+    usage: pip-check [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U]
 
     A quick overview of all installed packages and their update status.
 
@@ -33,7 +33,6 @@ Usage::
       -H, --hide-unchanged  Do not show "unchanged" packages.
       -u, --show-update     Show update instructions for updatable packages.
       -U, --user            Show only user installed packages.
-      --disable-colors      Disable coloring of text and tables.
 """
 from __future__ import unicode_literals
 
@@ -253,13 +252,6 @@ def main():
         dest="show_user",
         default=False,
         help="Show only user installed packages.",
-    )
-    parser.add_argument(
-        "--disable-colors",
-        action="store_true",
-        dest="disable_colors",
-        default=False,
-        help="Disable coloring of text and tables.",
     )
     options = parser.parse_args()
 
