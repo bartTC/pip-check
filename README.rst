@@ -64,6 +64,13 @@ Recommeded Similar Tools
 Changelog
 ---------
 
+v2.7 (2021-11-16):
+
+- Drop support for Python 2.7, 3.4 and 3.5
+- Added support for Python 3.9 and 3.10.
+- Removed 'colorclass' as a dependency and with that the shell argument 
+  `--disable-colors`.
+
 v2.6 (2019-12-12):
 
 - Requires Python 3.5 or higher.
