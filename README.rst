@@ -64,6 +64,11 @@ Recommeded Similar Tools
 Changelog
 ---------
 
+v2.8a (main)
+------------
+
+- Replaced deprecated "distutils" with "packaging" module. 
+
 v2.7 (2021-11-16):
 
 - Drop support for Python 2.7, 3.4 and 3.5

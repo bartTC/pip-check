@@ -42,9 +42,9 @@ import re
 import subprocess
 import sys
 from collections import OrderedDict
-from distutils.version import LooseVersion
 
 import terminaltables
+from packaging.version import Version
 
 # ------------------------------------------------------------------------------
 # Settings
@@ -284,8 +284,8 @@ def main():
             continue
 
         try:
-            latest = LooseVersion(package["latest_version"])
-            current = LooseVersion(package["version"])
+            latest = Version(package["latest_version"])
+            current = Version(package["version"])
         except ValueError:
             # Unable to parse the version into anything useful
             packages["unknown"].append(package)
@@ -306,7 +306,7 @@ def main():
             continue
 
         # Major upgrade (first version number)
-        if latest.version[0] > current.version[0]:
+        if latest > current:
             packages["major"].append(package)
             continue
 
