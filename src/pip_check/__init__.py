@@ -34,8 +34,6 @@ Usage::
       -u, --show-update     Show update instructions for updatable packages.
       -U, --user            Show only user installed packages.
 """
-from __future__ import unicode_literals
-
 import argparse
 import json
 import re
