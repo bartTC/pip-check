@@ -64,8 +64,7 @@ Recommeded Similar Tools
 Changelog
 ---------
 
-v2.8a (main)
-------------
+v2.8a (wip)
 
 - Replaced deprecated "distutils" with "packaging" module. 
 
