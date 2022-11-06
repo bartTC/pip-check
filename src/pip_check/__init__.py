@@ -289,6 +289,7 @@ def main():
             packages["unknown"].append(package)
             continue
 
+
         # If the current version is larger than the latest
         # (e.g. a pre-release is installed) put it into the unknown section.
         # Technically its 'unchanged' but I guess its better to have
@@ -304,7 +305,7 @@ def main():
             continue
 
         # Major upgrade (first version number)
-        if latest > current:
+        if current.major < latest.major:
             packages["major"].append(package)
             continue
 

@@ -64,26 +64,30 @@ Recommeded Similar Tools
 Changelog
 ---------
 
+v2.8.1 (2022-11-06):
+
+- Fixes issue with packages not correctly sorted into "Major" category.
+
 v2.8 (2022-11-06):
 
 - Added support for Python 3.11.
-- Replaced deprecated "distutils" with "packaging" module. 
+- Replaced deprecated "distutils" with "packaging" module.
 
 v2.7 (2021-11-16):
 
 - Drop support for Python 2.7, 3.4 and 3.5
 - Added support for Python 3.9 and 3.10.
-- Removed 'colorclass' as a dependency and with that the shell argument 
+- Removed 'colorclass' as a dependency and with that the shell argument
   `--disable-colors`.
 
 v2.6 (2019-12-12):
 
 - Requires Python 3.5 or higher.
 - Command error is shown if pip exits with a status code 1 (or larger).
-- Error message is shown if pip is not able to load packages in case of 
+- Error message is shown if pip is not able to load packages in case of
   network problems.
-- Update instructions will now add ``--user`` in case the pip-check command 
-  should only show user packages as well. 
+- Update instructions will now add ``--user`` in case the pip-check command
+  should only show user packages as well.
 
 v2.5.2 (2019-08-08):
 
