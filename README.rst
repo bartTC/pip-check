@@ -64,8 +64,9 @@ Recommeded Similar Tools
 Changelog
 ---------
 
-v2.8a (wip)
+v2.8 (2022-11-06):
 
+- Added support for Python 3.11.
 - Replaced deprecated "distutils" with "packaging" module. 
 
 v2.7 (2021-11-16):
