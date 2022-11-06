@@ -64,6 +64,10 @@ Recommeded Similar Tools
 Changelog
 ---------
 
+v2.9 (wip):
+
+- Show current Python and pip version upon load.
+
 v2.8.1 (2022-11-06):
 
 - Fixes issue with packages not correctly sorted into "Major" category.

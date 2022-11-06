@@ -119,7 +119,7 @@ def check_pip_version(options):
         re.UNICODE,
     )
     if matches and int(matches.groupdict()["major"]) >= pip_version:
-        return True
+        return cmd_response_string
 
     # Did not meet minimum version
     err(
@@ -254,11 +254,15 @@ def main():
     options = parser.parse_args()
 
     # The pip check factory
-    check_pip_version(options)
+    current_pip_version = check_pip_version(options)
 
     # --------------------------------------------------------------------------
 
-    sys.stdout.write("Loading package versions...\n")
+    sys.stdout.write("Python %s\n" % sys.version)
+    sys.stdout.write("%s\n" % current_pip_version)
+
+    sys.stdout.write("\nLoading package versions...")
+
     sys.stdout.flush()
 
     # Unchanged Packages
