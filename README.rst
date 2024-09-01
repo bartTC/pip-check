@@ -64,9 +64,10 @@ Recommeded Similar Tools
 Changelog
 ---------
 
-v2.9 (wip):
+v2.9 (2024-09-01):
 
 - Show current Python and pip version upon load.
+- Test against Python 3.12.
 
 v2.8.1 (2022-11-06):
 
