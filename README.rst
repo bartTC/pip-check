@@ -63,6 +63,10 @@ Recommeded Similar Tools
 
 Changelog
 ---------
+v2.10 (2025-04-11):
+
+- Resolve the issue of missing line breaks when no packages are found.
+- Test against Python 3.13.
 
 v2.9 (2024-09-01):
 

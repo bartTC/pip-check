@@ -1,13 +1,12 @@
 #!/usr/bin/env python
-from sys import exit
 
 from setuptools import find_packages, setup
 
-long_description = u"\n\n".join((open("README.rst").read(),))
+long_description = "\n\n".join((open("README.rst").read(),))
 
 setup(
     name="pip-check",
-    version="2.9",
+    version="2.10",
     description="Display installed pip packages and their update status..",
     long_description=long_description,
     author="Martin Mahner",
