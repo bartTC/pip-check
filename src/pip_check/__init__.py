@@ -261,7 +261,7 @@ def main():
     sys.stdout.write("Python %s\n" % sys.version)
     sys.stdout.write("%s\n" % current_pip_version)
 
-    sys.stdout.write("\nLoading package versions...")
+    sys.stdout.write("\nLoading package versions...\n")
 
     sys.stdout.flush()
 
