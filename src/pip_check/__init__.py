@@ -34,9 +34,9 @@ Usage::
       -u, --show-update     Show update instructions for updatable packages.
       -U, --user            Show only user installed packages.
 """
+
 import argparse
 import json
-import re
 import subprocess
 import sys
 from collections import OrderedDict
@@ -48,9 +48,6 @@ from packaging.version import Version
 # Settings
 # ------------------------------------------------------------------------------
 
-# Minimum pip version we need
-pip_version = 9
-
 # The `pip` command to run. Normally `pip` but you can specify
 # it using the `--cmd=pip` argument.
 #
@@ -59,13 +56,14 @@ pip_cmd = "pip"
 
 
 # The complete command to run to get a JSON list of outdated packages
-pip_uptodate_arg = "--uptodate"
-pip_outdated_arg = "--outdated"
 pip_not_required_arg = "--not-required"
 pip_user_arg = "--user"
 pip_local_arg = "--local"
 
-check_cmd = "{pip_cmd} list {arg} --retries=1 --disable-pip-version-check --format=json {notreq_arg} {user_arg} {local_arg}"
+pip_outdated_cmd = "{cmd} list --outdated --retries=1 --disable-pip-version-check --format=json {notreq_arg} {user_arg} {local_arg}"
+pip_current_cmd = "{cmd} list --uptodate --retries=1 --disable-pip-version-check --format=json {notreq_arg} {user_arg} {local_arg}"
+uv_outdated_cmd = "{cmd} list --outdated --format=json {notreq_arg}"
+uv_current_cmd = "{cmd} list --format=json {notreq_arg}"
 
 # Some pip packages such as pycryptopp have ridiculous long version
 # # 0.6.0.1206569328141510525648634803928199668821045408958
@@ -110,39 +108,31 @@ def check_pip_version(options):
         )
         sys.exit(1)
 
-    # cmd_version is a string like
-    # pip 9.0.1 from /usr/local/lib/python2.7/site-packages (python 2.7)
-
-    matches = re.match(
-        r"pip (?P<major>\d+)\.(?P<minor>\d+).*",
-        cmd_response_string,
-        re.UNICODE,
-    )
-    if matches and int(matches.groupdict()["major"]) >= pip_version:
-        return cmd_response_string
-
-    # Did not meet minimum version
-    err(
-        "Please update pip. The minimal pip version we require is {v}.".format(
-            v=pip_version
-        )
-    )
-    sys.exit(1)
+    return cmd_response_string
 
 
-def get_package_versions(options, outdated=True):
+def get_package_versions(options, outdated_only=True):
     """
     Retrieve a list of outdated packages from pip. Calls:
 
-        pip list [--outdated|--uptodate] --format=json [--not-required] [--user] [--local]
+        [uv] pip list [--outdated|--uptodate] --format=json [--not-required] [--user] [--local]
     """
+    if outdated_only:
+        check_cmd = (
+            uv_outdated_cmd if options.pip_cmd.startswith("uv") else pip_outdated_cmd
+        )
+    else:
+        check_cmd = (
+            uv_current_cmd if options.pip_cmd.startswith("uv") else pip_current_cmd
+        )
+
     cmd = check_cmd.format(
-        pip_cmd=options.pip_cmd,
-        arg=pip_outdated_arg if outdated else pip_uptodate_arg,
+        cmd=options.pip_cmd,
         notreq_arg=pip_not_required_arg if options.pip_not_required else "",
         user_arg=pip_user_arg if options.show_user else "",
         local_arg=pip_local_arg if options.show_local else "",
     )
+
     try:
         cmd_response = subprocess.run(
             cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
@@ -150,7 +140,7 @@ def get_package_versions(options, outdated=True):
 
     except subprocess.CalledProcessError as e:
         err(
-            "The pip command did not succeed: {stderr}".format(
+            "The pip command did not succeed: {stderr}\n".format(
                 stderr=e.stderr.decode("utf-8")
             )
         )
@@ -161,7 +151,7 @@ def get_package_versions(options, outdated=True):
         if "NewConnectionError" in cmd_response.stderr.decode("utf-8").strip():
             err(
                 "\npip indicated that it has connection problems. "
-                "Please check your network."
+                "Please check your network.\n"
             )
             sys.exit(1)
 
@@ -176,7 +166,7 @@ def get_package_versions(options, outdated=True):
     except Exception:  # Py2 raises ValueError, Py3 JSONEexception
         err(
             "Unable to parse the version list from pip. "
-            "Does `pip list --format=json` work for you?"
+            "Does `pip list --format=json` work for you?\n"
         )
         sys.exit(1)
 
@@ -186,7 +176,7 @@ def get_package_versions(options, outdated=True):
 def main():
     parser = argparse.ArgumentParser(
         description="A quick overview of all installed packages "
-        "and their update status."
+        "and their update status. Supports `pip` or `uv pip`."
     )
     parser.add_argument(
         "-a",
@@ -201,7 +191,7 @@ def main():
         "--cmd",
         dest="pip_cmd",
         default=pip_cmd,
-        help="The pip executable to run. Default: `pip`",
+        help="The [uv] pip executable to run. E.g.: `/path/to/pip` or `uv pip`. Default: `pip`",
     )
     parser.add_argument(
         "-l",
@@ -209,7 +199,7 @@ def main():
         action="store_true",
         dest="show_local",
         default=False,
-        help="Show only virtualenv installed packages.",
+        help="Show only virtualenv installed packages. (pip only)",
     )
     parser.add_argument(
         "-r",
@@ -217,7 +207,7 @@ def main():
         action="store_true",
         dest="pip_not_required",
         default=False,
-        help="List only packages that are not dependencies of installed packages.",
+        help="List only packages that are not dependencies of installed packages. (pip only)",
     )
     parser.add_argument(
         "-f",
@@ -241,7 +231,7 @@ def main():
         action="store_true",
         dest="show_update",
         default=False,
-        help="Show update instructions for updatable packages.",
+        help="Show update instructions for updatable packages. (pip only)",
     )
     parser.add_argument(
         "-U",
@@ -249,7 +239,7 @@ def main():
         action="store_true",
         dest="show_user",
         default=False,
-        help="Show only user installed packages.",
+        help="Show only user installed packages. (pip only)",
     )
     options = parser.parse_args()
 
@@ -268,7 +258,7 @@ def main():
     # Unchanged Packages
     unchanged = []
     if not options.hide_unchanged:
-        unchanged = get_package_versions(options, outdated=False)
+        unchanged = get_package_versions(options, outdated_only=False)
 
     packages = {
         "major": [],
@@ -278,10 +268,9 @@ def main():
     }
 
     # Fetch all outdated packages and sort them into major/minor/unknown.
-    for package in get_package_versions(options, outdated=True):
-
+    for package in get_package_versions(options, outdated_only=True):
         # No version info
-        if not "latest_version" in package or not "version" in package:
+        if "latest_version" not in package or "version" not in package:
             packages["unknown"].append(package)
             continue
 
@@ -292,7 +281,6 @@ def main():
             # Unable to parse the version into anything useful
             packages["unknown"].append(package)
             continue
-
 
         # If the current version is larger than the latest
         # (e.g. a pre-release is installed) put it into the unknown section.
@@ -338,7 +326,7 @@ def main():
 
         if latest_version and options.show_update:
             help_string = "pip install {user}{name}=={version}".format(
-                user="--user " if options.show_user == True else "",
+                user="--user " if options.show_user is True else "",
                 name=name,
                 version=latest_version,
             )
@@ -357,10 +345,10 @@ def main():
         ("unknown", "Unknown Package Release Status", "autoblack"),
     ]:
         if packages[key]:
-            if not key in table_data:
+            if key not in table_data:
                 table_data[key] = []
 
-            table_data[key].append([label, "Version", "Latest"]),
+            (table_data[key].append([label, "Version", "Latest"]),)
             for package in packages[key]:
                 table_data[key].append(columns(package))
 
@@ -384,7 +372,7 @@ def main():
                     "  {pip_cmd} install --upgrade {user}{packages}\n".format(
                         label=label,
                         pip_cmd=options.pip_cmd,
-                        user="--user " if options.show_user == True else "",
+                        user="--user " if options.show_user is True else "",
                         packages=" ".join([p["name"] for p in packages[label]]),
                     )
                 )

@@ -6,7 +6,7 @@ long_description = "\n\n".join((open("README.rst").read(),))
 
 setup(
     name="pip-check",
-    version="2.10",
+    version="3.0",
     description="Display installed pip packages and their update status..",
     long_description=long_description,
     author="Martin Mahner",
@@ -28,6 +28,5 @@ setup(
     install_requires=[
         "terminaltables",
         "packaging",
-        "pip>=9",
     ],
 )

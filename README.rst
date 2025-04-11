@@ -11,6 +11,13 @@ pip-check gives you a quick overview of all installed packages and their
 update status. Under the hood it calls ``pip list --outdated --format=columns``
 and transforms it into a more user friendly table.
 
+pip-check also supports uv, or pip at any location. Pass the `pip`
+command using ``--cmd``::
+
+    pip-check -c pip
+    pip-check -c ".venv/bin/pip"
+    pip-check -c "uv pip"
+
 .. image:: https://d.pr/i/ZDPuw5.png
 
 Installation::
@@ -24,22 +31,20 @@ The last version that runs on Python 2.7 or 3.4 is v2.5.2. Install it with::
 Usage::
 
     $ pip-check -h
-    usage: pip-check [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U]
+    usage: __init__.py [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U]
 
-    A quick overview of all installed packages and their update status.
+    A quick overview of all installed packages and their update status. Supports `pip` or `uv pip`.
 
-    optional arguments:
+    options:
       -h, --help            show this help message and exit
       -a, --ascii           Display as ASCII Table
-      -c PIP_CMD, --cmd PIP_CMD
-                            The pip executable to run. Default: `pip`
-      -l, --local           Show only virtualenv installed packages.
-      -r, --not-required    List only packages that are not dependencies of
-                            installed packages.
+      -c, --cmd PIP_CMD     The [uv] pip executable to run. E.g.: `/path/to/pip` or `uv pip`. Default: `pip`
+      -l, --local           Show only virtualenv installed packages. (pip only)
+      -r, --not-required    List only packages that are not dependencies of installed packages. (pip only)
       -f, --full-version    Show full version strings.
       -H, --hide-unchanged  Do not show "unchanged" packages.
-      -u, --show-update     Show update instructions for updatable packages.
-      -U, --user            Show only user installed packages.
+      -u, --show-update     Show update instructions for updatable packages. (pip only)
+      -U, --user            Show only user installed packages. (pip only)
 
 Testing:
 
@@ -63,6 +68,11 @@ Recommeded Similar Tools
 
 Changelog
 ---------
+
+v3.0 (2025-04-11):
+
+- Added support for ``uv``. Use ``--cmd="uv pip"`` to utilize uv.
+
 v2.10 (2025-04-11):
 
 - Resolve the issue of missing line breaks when no packages are found.
