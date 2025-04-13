@@ -2,7 +2,7 @@
 
 pip-check gives you a quick overview of all installed packages and their
 update status. Under the hood it calls `pip list --outdated --format=columns`
-and transforms it into a more user friendly table.
+and transforms it into a more user-friendly table.
 
 pip-check also supports uv, or pip at any location. Pass the `pip`
 command using `--cmd`:
@@ -55,7 +55,7 @@ pip-check uses `uv` for local development.
 $ pip install -U uv
 uv sync     # Create a .venv and install dependencies
 uv build    # Build distribution packages
-uv publish  # Pubish on Pypi
+uv publish  # Publish on Pypi
 ```
 
 ### Testing:
