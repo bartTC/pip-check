@@ -1,42 +1,18 @@
 #!/usr/bin/env python
 
-"""
+"""pip-check.
+
 pip-check gives you a quick overview of all installed packages and their
-update status. Under the hood it calls
-
-    `pip list --outdated --format=columns`
-
+update status. Under the hood it calls `pip list --outdated --format=columns`
 and transforms it into a more user friendly table.
-
-Requires ``pip`` Version 9 or higher!
-
-Installation::
-
-    pip install pip-check
-
-Usage::
-
-    $ pip-check -h
-
-    usage: pip-check [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U]
-
-    A quick overview of all installed packages and their update status.
-
-    optional arguments:
-      -h, --help            show this help message and exit
-      -a, --ascii           Display as ASCII Table
-      -c PIP_CMD, --cmd PIP_CMD
-                            The pip executable to run. Default: `pip`
-      -l, --local           Show only virtualenv installed packages.
-      -r, --not-required    List only packages that are not dependencies of installed packages.
-      -f, --full-version    Show full version strings.
-      -H, --hide-unchanged  Do not show "unchanged" packages.
-      -u, --show-update     Show update instructions for updatable packages.
-      -U, --user            Show only user installed packages.
 """
+
+from __future__ import annotations
 
 import argparse
+import contextlib
 import json
+import shlex
 import subprocess
 import sys
 from collections import OrderedDict
@@ -50,16 +26,12 @@ from packaging.version import Version
 
 # The `pip` command to run. Normally `pip` but you can specify
 # it using the `--cmd=pip` argument.
-#
-# pip-check --cmd=pip3
 pip_cmd = "pip"
-
 
 # The complete command to run to get a JSON list of outdated packages
 pip_not_required_arg = "--not-required"
 pip_user_arg = "--user"
 pip_local_arg = "--local"
-
 pip_outdated_cmd = "{cmd} list --outdated --retries=1 --disable-pip-version-check --format=json {notreq_arg} {user_arg} {local_arg}"
 pip_current_cmd = "{cmd} list --uptodate --retries=1 --disable-pip-version-check --format=json {notreq_arg} {user_arg} {local_arg}"
 uv_outdated_cmd = "{cmd} list --outdated --format=json {notreq_arg}"
@@ -74,32 +46,62 @@ version_length = 10
 err = sys.stderr.write
 out = sys.stdout.write
 
+
+# ------------------------------------------------------------------------------
+# Functions
 # ------------------------------------------------------------------------------
 
 
-def check_pip_version(options):
+def split_command(cmd: str) -> list[str]:
+    """Split a command string into a list of properly escaped and quoted substrings.
+
+    This function takes a single command string as input, splits it into substrings,
+    and ensures each substring is properly escaped and shell-quoted. It leverages
+    the `shlex.split` method to perform parsing and tokenization.
+
+    Args:
+        cmd (str): The command string to be split and quoted.
+
+    Returns:
+        list[str]: A list of shell-quoted substrings derived from the input command.
+
     """
-    Make sure minimum pip version is met.
+    return [shlex.quote(s) for s in shlex.split(cmd)]
+
+
+def get_pip_version(options: argparse.Namespace) -> str:
+    """Retrieve the version of pip by executing the provided pip command.
+
+    This function runs the pip command specified in the options parameter to fetch
+    the current installed pip version. If the command execution fails or does not
+    return a version string, the process will terminate with an error.
+
+    Arguments:
+        options (argparse.Namespace): A namespace object that encompasses the
+            configurations needed for the command execution. This includes pip
+            command to use, additional arguments for specifying package scope,
+            and other related options.
+
+    Returns:
+        str: The output of the executed pip command, which includes the pip version.
+
+    Raises:
+        subprocess.CalledProcessError: If the pip command fails during execution.
+        SystemExit: If the pip command execution fails or does not return a valid
+                    version string.
+
     """
-    cmd = "{pip_cmd} --version".format(pip_cmd=options.pip_cmd)
+    cmd = f"{options.pip_cmd} --version"
 
     try:
-        cmd_response = subprocess.run(
-            cmd,
-            shell=True,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            check=True,
+        cmd_response = subprocess.run(  # noqa: S603
+            split_command(cmd), capture_output=True, check=True, text=True
         )
     except subprocess.CalledProcessError as e:
-        err(
-            "The pip command did not succeed: {stderr}".format(
-                stderr=e.stderr.decode("utf-8")
-            )
-        )
+        err(f"The pip command did not succeed: {e.stderr}")
         sys.exit(1)
 
-    cmd_response_string = cmd_response.stdout.decode("utf-8").strip()
+    cmd_response_string = cmd_response.stdout.strip()
 
     if not cmd_response_string:
         err(
@@ -111,11 +113,36 @@ def check_pip_version(options):
     return cmd_response_string
 
 
-def get_package_versions(options, outdated_only=True):
-    """
-    Retrieve a list of outdated packages from pip. Calls:
+def get_package_versions(
+    options: argparse.Namespace, *, outdated_only: bool = True
+) -> dict:
+    """Fetch and parses the package version information using pip command.
 
-        [uv] pip list [--outdated|--uptodate] --format=json [--not-required] [--user] [--local]
+    This function executes a pip command to retrieve the package versions,
+    either limited to outdated packages or including all packages based on the
+    outdated_only flag. The command is constructed based on the provided options
+    and executed using subprocess. Results are captured and parsed from JSON
+    for further processing. Errors during execution, connection issues, or JSON
+    parsing errors are handled, and appropriate error messages are displayed
+    to the user. The program will exit with relevant status codes upon encountering
+    errors.
+
+    Arguments:
+        options (argparse.Namespace): A namespace object that encompasses the
+            configurations needed for the command execution. This includes pip
+            command to use, additional arguments for specifying package scope,
+            and other related options.
+        outdated_only (bool): Optional flag to determine whether to fetch only
+            outdated packages (default is True) or all package versions.
+
+    Returns:
+        dict: A dictionary containing package version details parsed from the
+              pip command output.
+
+    Raises:
+        SystemExit: Raised when execution of the pip command fails, HTTP
+                    connection issues are detected, or JSON parsing fails.
+
     """
     if outdated_only:
         check_cmd = (
@@ -134,8 +161,8 @@ def get_package_versions(options, outdated_only=True):
     )
 
     try:
-        cmd_response = subprocess.run(
-            cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        cmd_response = subprocess.run(  # noqa: S603
+            split_command(cmd), check=False, capture_output=True, text=True
         )
 
     except subprocess.CalledProcessError as e:
@@ -147,15 +174,14 @@ def get_package_versions(options, outdated_only=True):
         sys.exit(1)
 
     # The pip command exited with 0 but we have stderr content:
-    if cmd_response.stderr:
-        if "NewConnectionError" in cmd_response.stderr.decode("utf-8").strip():
-            err(
-                "\npip indicated that it has connection problems. "
-                "Please check your network.\n"
-            )
-            sys.exit(1)
+    if cmd_response.stderr and "NewConnectionError" in cmd_response.stderr:
+        err(
+            "\npip indicated that it has connection problems. "
+            "Please check your network.\n"
+        )
+        sys.exit(1)
 
-    cmd_response_string = cmd_response.stdout.decode("utf-8").strip()
+    cmd_response_string = cmd_response.stdout.strip()
 
     if not cmd_response_string:
         err("No outdated packages. \\o/")
@@ -163,7 +189,7 @@ def get_package_versions(options, outdated_only=True):
 
     try:
         pip_packages = json.loads(cmd_response_string)
-    except Exception:  # Py2 raises ValueError, Py3 JSONEexception
+    except json.JSONDecodeError:
         err(
             "Unable to parse the version list from pip. "
             "Does `pip list --format=json` work for you?\n"
@@ -173,7 +199,15 @@ def get_package_versions(options, outdated_only=True):
     return pip_packages
 
 
-def main():
+def main() -> None:  # noqa: C901 PLR0912 PLR0915  # Ignore too complex warning
+    """Parse command-line arguments and show package list.
+
+    Provides functionality for displaying and categorizing installed Python packages
+    along with their update statuses. The program supports options to filter
+    packages, show update instructions, and display formatted tables. Package
+    classifications include major updates, minor updates, unchanged, and unknown
+    statuses.
+    """
     parser = argparse.ArgumentParser(
         description="A quick overview of all installed packages "
         "and their update status. Supports `pip` or `uv pip`."
@@ -244,12 +278,12 @@ def main():
     options = parser.parse_args()
 
     # The pip check factory
-    current_pip_version = check_pip_version(options)
+    current_pip_version = get_pip_version(options)
 
     # --------------------------------------------------------------------------
 
-    sys.stdout.write("Python %s\n" % sys.version)
-    sys.stdout.write("%s\n" % current_pip_version)
+    sys.stdout.write(f"Python {sys.version}\n")
+    sys.stdout.write(f"{current_pip_version}\n")
 
     sys.stdout.write("\nLoading package versions...\n")
 
@@ -306,23 +340,23 @@ def main():
 
     table_data = OrderedDict()
 
-    def cut_version(version):
+    def cut_version(version: str) -> str:
         if not version or version == "Unknown":
             return version
 
         # Cut version to readable length
         if not options.show_long_versions and len(version) > version_length + 3:
-            return "{0}...".format(version[:version_length])
+            return f"{version[:version_length]}..."
         return version
 
-    def columns(package):
-        # Generate the columsn for the table(s) for each package
+    def columns(package_data: dict) -> list[str] | None:
+        # Generate the columns for the table(s) for each package
         # Name | Current Version | Latest Version | pypi String
 
-        name = package.get("name")
-        current_version = package.get("version", None)
-        latest_version = package.get("latest_version", None)
-        help_string = "https://pypi.python.org/pypi/{}".format(package["name"])
+        name = package_data.get("name")
+        current_version = package_data.get("version")
+        latest_version = package_data.get("latest_version")
+        help_string = "https://pypi.python.org/pypi/{}".format(package_data["name"])
 
         if latest_version and options.show_update:
             help_string = "pip install {user}{name}=={version}".format(
@@ -338,7 +372,7 @@ def main():
             help_string,
         ]
 
-    for key, label, color in [
+    for key, label, _ in [
         ("major", "Major Release Update", "autored"),
         ("minor", "Minor Release Update", "autoyellow"),
         ("unchanged", "Unchanged Packages", "autogreen"),
@@ -349,17 +383,17 @@ def main():
                 table_data[key] = []
 
             (table_data[key].append([label, "Version", "Latest"]),)
-            for package in packages[key]:
-                table_data[key].append(columns(package))
+            for line_package in packages[key]:
+                table_data[key].append(columns(line_package))
 
     # Table output class
-    Table = (
+    table_class = (
         terminaltables.AsciiTable if options.ascii_only else terminaltables.SingleTable
     )
 
-    for key, data in table_data.items():
+    for data in table_data.values():
         out("\n")
-        table = Table(data)
+        table = table_class(data)
         out(table.table)
         out("\n")
         sys.stdout.flush()
@@ -381,7 +415,5 @@ def main():
 # ------------------------------------------------------------------------------
 
 if __name__ == "__main__":
-    try:
+    with contextlib.suppress(KeyboardInterrupt):
         main()
-    except KeyboardInterrupt:
-        pass
