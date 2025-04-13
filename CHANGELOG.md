@@ -1,73 +1,9 @@
-.. image:: https://travis-ci.org/bartTC/pip-check.svg?branch=master
-    :target: https://travis-ci.org/bartTC/pip-check
+# Changelog
 
------
+Unreleased:
 
-=========
-pip-check
-=========
-
-pip-check gives you a quick overview of all installed packages and their
-update status. Under the hood it calls ``pip list --outdated --format=columns``
-and transforms it into a more user friendly table.
-
-pip-check also supports uv, or pip at any location. Pass the `pip`
-command using ``--cmd``::
-
-    pip-check -c pip
-    pip-check -c ".venv/bin/pip"
-    pip-check -c "uv pip"
-
-.. image:: https://d.pr/i/ZDPuw5.png
-
-Installation::
-
-    pip install pip-check
-
-The last version that runs on Python 2.7 or 3.4 is v2.5.2. Install it with::
-
-    pip install pip-check==2.5.2
-
-Usage::
-
-    $ pip-check -h
-    usage: __init__.py [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U]
-
-    A quick overview of all installed packages and their update status. Supports `pip` or `uv pip`.
-
-    options:
-      -h, --help            show this help message and exit
-      -a, --ascii           Display as ASCII Table
-      -c, --cmd PIP_CMD     The [uv] pip executable to run. E.g.: `/path/to/pip` or `uv pip`. Default: `pip`
-      -l, --local           Show only virtualenv installed packages. (pip only)
-      -r, --not-required    List only packages that are not dependencies of installed packages. (pip only)
-      -f, --full-version    Show full version strings.
-      -H, --hide-unchanged  Do not show "unchanged" packages.
-      -u, --show-update     Show update instructions for updatable packages. (pip only)
-      -U, --user            Show only user installed packages. (pip only)
-
-Testing:
-
-Test against a variation of Python versions::
-
-    $ pip install tox tox-pyenv
-    $ tox
-
-Test against your current Python version::
-
-    $ python setup.py test
-
-Recommeded Similar Tools
-------------------------
-
-- `pip-date`_ - Show the installation or modification times of all your pip packages
-- `pip-chill`_ - Lists only the dependencies (or not) of installed packages
-
-.. _pip-date: https://github.com/E3V3A/pip-date
-.. _pip-chill: https://github.com/rbanffy/pip-chill
-
-Changelog
----------
+- Use uv and hatchling as the build tool.
+- Switch all documentation from reStructuredText to Markdown.
 
 v3.0 (2025-04-11):
 
