@@ -1,3 +1,4 @@
+*.egg-info
+.venv
 build
 dist
-*.egg-info

@@ -1,0 +1,29 @@
+[project]
+name = "pip-check"
+version = "3.1a0"
+description = "Display installed pip packages and their update status."
+readme = "README.md"
+requires-python = ">=3.8"
+authors = [
+    { name = "Martin Mahner", email = "martin@mahner.org" }
+]
+license = { text = "MIT" }
+dependencies = [
+    "terminaltables",
+    "packaging",
+]
+
+[dependency-groups]
+dev = [
+    "nox>=2022.1.7",
+]
+
+[project.urls]
+Homepage = "https://github.com/bartTC/pip-check/"
+
+[project.scripts]
+pip-check = "pip_check:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
