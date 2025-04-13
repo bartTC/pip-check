@@ -14,7 +14,7 @@ def tests(session: nox.Session) -> None:
     """Basic testsuite."""
     session.install("--upgrade", "pip", "uv")
     session.install("html5lib==0.999999999", "django==1.10", "pyglet==2.0.dev23")
-    session.install(".")  # Assuming pip-check is in the current project
+    session.install(".")
 
     response = session.run("pip-check", silent=True)
 
@@ -24,6 +24,7 @@ def tests(session: nox.Session) -> None:
     assert "2.0.dev23" in response
 
     session.run("pip-check", "--help")
+    session.run("pip-check", "--version")
     session.run(
         "pip-check",
         "--ascii",

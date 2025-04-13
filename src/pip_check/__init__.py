@@ -17,9 +17,12 @@ import shlex
 import subprocess
 import sys
 from collections import OrderedDict
+from importlib.metadata import version
 
 import terminaltables
 from packaging.version import Version
+
+__version__ = version("pip-check")
 
 # ------------------------------------------------------------------------------
 # Settings
@@ -280,18 +283,26 @@ def main() -> None:  # noqa: C901 PLR0912 PLR0915  # Ignore too complex warning
         default=False,
         help="Show only user installed packages. (pip only)",
     )
-    options = parser.parse_args()
+    parser.add_argument(
+        "--version",
+        action="store_true",
+        dest="show_version",
+        default=False,
+        help="Show the version of pip-check and exit.",
+    )
 
-    # The pip check factory
-    current_pip_version = get_pip_version(options)
+    options = parser.parse_args()
 
     # --------------------------------------------------------------------------
 
+    if options.show_version:
+        sys.stdout.write(f"pip-check version {__version__}\n")
+        sys.exit(0)
+
+    current_pip_version = get_pip_version(options)
     sys.stdout.write(f"Python {sys.version}\n")
     sys.stdout.write(f"{current_pip_version}\n")
-
     sys.stdout.write("\nLoading package versions...\n")
-
     sys.stdout.flush()
 
     # Unchanged Packages
