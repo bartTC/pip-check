@@ -1,3 +1,9 @@
+[![Testsuite](https://github.com/bartTC/pip-check/actions/workflows/test.yml/badge.svg)](https://github.com/bartTC/pip-check/actions/workflows/test.yml)
+[![PyPi Version](https://img.shields.io/pypi/v/pip-check
+)](https://pypi.org/project/pip-check/)
+![Monthly Downloads](https://img.shields.io/pypi/dm/pip-check
+)
+
 # pip-check
 
 pip-check gives you a quick overview of all installed packages and their
