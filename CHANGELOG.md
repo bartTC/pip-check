@@ -3,7 +3,10 @@
 Unreleased:
 
 - Use uv and hatchling as the build tool.
+- Use nox as the test runner.
 - Switch all documentation from reStructuredText to Markdown.
+- Introduce Ruff and optimize code against current set of Ruff rules.
+- Added type annotations.
 
 v3.0 (2025-04-11):
 
