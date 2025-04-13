@@ -1,7 +1,8 @@
+"""Basic tests around pip-check."""
+
 from __future__ import annotations
 
 import nox
-
 
 nox.options.default_venv_backend = "uv"
 
@@ -9,7 +10,8 @@ python_versions = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 
 @nox.session(python=python_versions)
-def tests(session: nox.Session):
+def tests(session: nox.Session) -> None:
+    """Basic testsuite."""
     session.install("--upgrade", "pip", "uv")
     session.install("html5lib==0.999999999", "django==1.10", "pyglet==2.0.dev23")
     session.install(".")  # Assuming pip-check is in the current project
@@ -41,6 +43,13 @@ def tests(session: nox.Session):
 
 
 @nox.session
-def readme(session):
+def readme(session: nox.Session) -> None:
+    """Make sure, the README is valid Markdown."""
     session.install("markdown-it-py")
     session.run("markdown-it", "README.md", "/dev/null", external=True)
+
+
+@nox.session
+def lint(session: nox.Session) -> None:
+    """Lint the project using ruff."""
+    session.run("ruff", "check", "src", "noxfile.py")

@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-"""pip-check.
+"""
+pip-check.
 
 pip-check gives you a quick overview of all installed packages and their
 update status. Under the hood it calls `pip list --outdated --format=columns`
@@ -53,7 +54,8 @@ out = sys.stdout.write
 
 
 def split_command(cmd: str) -> list[str]:
-    """Split a command string into a list of properly escaped and quoted substrings.
+    """
+    Split a command string into a list of properly escaped and quoted substrings.
 
     This function takes a single command string as input, splits it into substrings,
     and ensures each substring is properly escaped and shell-quoted. It leverages
@@ -70,7 +72,8 @@ def split_command(cmd: str) -> list[str]:
 
 
 def get_pip_version(options: argparse.Namespace) -> str:
-    """Retrieve the version of pip by executing the provided pip command.
+    """
+    Retrieve the version of pip by executing the provided pip command.
 
     This function runs the pip command specified in the options parameter to fetch
     the current installed pip version. If the command execution fails or does not
@@ -116,7 +119,8 @@ def get_pip_version(options: argparse.Namespace) -> str:
 def get_package_versions(
     options: argparse.Namespace, *, outdated_only: bool = True
 ) -> dict:
-    """Fetch and parses the package version information using pip command.
+    """
+    Fetch and parses the package version information using pip command.
 
     This function executes a pip command to retrieve the package versions,
     either limited to outdated packages or including all packages based on the
@@ -200,7 +204,8 @@ def get_package_versions(
 
 
 def main() -> None:  # noqa: C901 PLR0912 PLR0915  # Ignore too complex warning
-    """Parse command-line arguments and show package list.
+    """
+    Parse command-line arguments and show package list.
 
     Provides functionality for displaying and categorizing installed Python packages
     along with their update statuses. The program supports options to filter
