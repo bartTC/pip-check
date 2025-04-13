@@ -52,4 +52,4 @@ def readme(session: nox.Session) -> None:
 @nox.session
 def lint(session: nox.Session) -> None:
     """Lint the project using ruff."""
-    session.run("ruff", "check", "src", "noxfile.py")
+    session.run("ruff", "check", "src", "noxfile.py", external=True)
