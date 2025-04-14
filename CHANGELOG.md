@@ -1,12 +1,13 @@
 # Changelog
 
-Unreleased:
+v3.1 (2025-04-14):
 
-- Use uv and hatchling as the build tool.
-- Use nox as the test runner.
-- Switch all documentation from reStructuredText to Markdown.
-- Introduce Ruff and optimize code against current set of Ruff rules.
-- Added type annotations.
+- Adopted **uv** and **hatchling** as the primary build tools.
+- Implemented **nox** as the test runner.
+- Migrated all documentation from **reStructuredText** to **Markdown** for improved readability and accessibility.
+- Introduced **Ruff** as a linter and optimized code to align with the current set of Ruff rules.
+- Added type annotations throughout the codebase.
+- Test against **Python 3.14**.
 
 v3.0 (2025-04-11):
 
