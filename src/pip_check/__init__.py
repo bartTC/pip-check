@@ -5,7 +5,7 @@ pip-check.
 
 pip-check gives you a quick overview of all installed packages and their
 update status. Under the hood it calls `pip list --outdated --format=columns`
-and transforms it into a more user friendly table.
+and transforms it into a more user-friendly table.
 """
 
 from __future__ import annotations
@@ -24,10 +24,6 @@ from packaging.version import Version
 
 __version__ = version("pip-check")
 
-# ------------------------------------------------------------------------------
-# Settings
-# ------------------------------------------------------------------------------
-
 # The `pip` command to run. Normally `pip` but you can specify
 # it using the `--cmd=pip` argument.
 pip_cmd = "pip"
@@ -45,15 +41,10 @@ uv_current_cmd = "{cmd} list --format=json {notreq_arg}"
 # # 0.6.0.1206569328141510525648634803928199668821045408958
 # which messes up the table. These are capped by default to 10 characters.
 # Can be overridden with -f.
-version_length = 10
+max_version_length = 10
 
 err = sys.stderr.write
 out = sys.stdout.write
-
-
-# ------------------------------------------------------------------------------
-# Functions
-# ------------------------------------------------------------------------------
 
 
 def split_command(cmd: str) -> list[str]:
@@ -206,16 +197,158 @@ def get_package_versions(
     return pip_packages
 
 
-def main() -> None:  # noqa: C901 PLR0912 PLR0915  # Ignore too complex warning
+def run(options: argparse.Namespace) -> None:  # noqa: PLR0912, PLR0915, C901
     """
-    Parse command-line arguments and show package list.
+    Analyzes and prints information about Python packages.
 
-    Provides functionality for displaying and categorizing installed Python packages
-    along with their update statuses. The program supports options to filter
-    packages, show update instructions, and display formatted tables. Package
-    classifications include major updates, minor updates, unchanged, and unknown
-    statuses.
+    Categorizing them into major, minor, unchanged, or unknown updates. The function
+    retrieves the current Python version, pip version, and package versions from the
+    provided options. It prepares outputs, such as lists of packages grouped by their
+    update types, and displays tabular output summarizing the analysis.
+
+    Arguments:
+        options (argparse.Namespace): Command-line options and flags passed to
+        control specific behaviors of the function, such as whether to hide
+        unchanged packages or show update commands.
+
+    Returns:
+        None
+
+    Raises:
+        None
+
     """
+    current_pip_version = get_pip_version(options)
+    sys.stdout.write(f"Python {sys.version}\n")
+    sys.stdout.write(f"{current_pip_version}\n")
+    sys.stdout.write("\nLoading package versions...\n")
+    sys.stdout.flush()
+
+    # Unchanged Packages
+    unchanged = []
+    if not options.hide_unchanged:
+        unchanged = get_package_versions(options, outdated_only=False)
+
+    packages = {
+        "major": [],
+        "minor": [],
+        "unknown": [],
+        "unchanged": unchanged,
+    }
+
+    # Fetch all outdated packages and sort them into major/minor/unknown.
+    for package in get_package_versions(options, outdated_only=True):
+        # No version info
+        if "latest_version" not in package or "version" not in package:
+            packages["unknown"].append(package)
+            continue
+
+        try:
+            latest = Version(package["latest_version"])
+            current = Version(package["version"])
+        except ValueError:
+            # Unable to parse the version into anything useful
+            packages["unknown"].append(package)
+            continue
+
+        # If the current version is larger than the latest
+        # (e.g. a pre-release is installed) put it into the unknown section.
+        # Technically its 'unchanged' but I guess its better to have
+        # pre-releases stand out more.
+        if current > latest:
+            packages["unknown"].append(package)
+            continue
+
+        # Current and latest package version is the same. If this happens,
+        # it's likely a bug with the version parsing.
+        if current == latest:
+            packages["unchanged"].append(package)
+            continue
+
+        # Major upgrade (first version number)
+        if current.major < latest.major:
+            packages["major"].append(package)
+            continue
+
+        # Everything else is a minor update
+        packages["minor"].append(package)
+
+    table_data = OrderedDict()
+
+    def cut_version(v: str) -> str:
+        if not v or v == "Unknown":
+            return v
+
+        # Cut version to readable length
+        if not options.show_long_versions and len(v) > max_version_length + 3:
+            return f"{v[:max_version_length]}..."
+        return v
+
+    def columns(package_data: dict) -> list[str] | None:
+        # Generate the columns for the table(s) for each package
+        # Name | Current Version | Latest Version | pypi String
+
+        name = package_data.get("name")
+        current_version = package_data.get("version")
+        latest_version = package_data.get("latest_version")
+        help_string = "https://pypi.python.org/pypi/{}".format(package_data["name"])
+
+        if latest_version and options.show_update:
+            help_string = "pip install {user}{name}=={version}".format(
+                user="--user " if options.show_user is True else "",
+                name=name,
+                version=latest_version,
+            )
+
+        return [
+            name,
+            cut_version(current_version) or "Unknown",
+            cut_version(latest_version) or current_version or "Unknown",
+            help_string,
+        ]
+
+    for key, label, _ in [
+        ("major", "Major Release Update", "autored"),
+        ("minor", "Minor Release Update", "autoyellow"),
+        ("unchanged", "Unchanged Packages", "autogreen"),
+        ("unknown", "Unknown Package Release Status", "autoblack"),
+    ]:
+        if packages[key]:
+            if key not in table_data:
+                table_data[key] = []
+
+            (table_data[key].append([label, "Version", "Latest"]),)
+            for line_package in packages[key]:
+                table_data[key].append(columns(line_package))
+
+    # Table output class
+    table_class = (
+        terminaltables.AsciiTable if options.ascii_only else terminaltables.SingleTable
+    )
+
+    for data in table_data.values():
+        out("\n")
+        table = table_class(data)
+        out(table.table)
+        out("\n")
+        sys.stdout.flush()
+
+    if options.show_update:
+        for label in ("major", "minor"):
+            if packages[label]:
+                out(
+                    "\nTo update all {label} releases run:\n\n"
+                    "  {pip_cmd} install --upgrade {user}{packages}\n".format(
+                        label=label,
+                        pip_cmd=options.pip_cmd,
+                        user="--user " if options.show_user is True else "",
+                        packages=" ".join([p["name"] for p in packages[label]]),
+                    )
+                )
+
+
+def main() -> None:
+    """Parse command-line arguments and runs the application."""
     parser = argparse.ArgumentParser(
         description="A quick overview of all installed packages "
         "and their update status. Supports `pip` or `uv pip`."
@@ -293,142 +426,12 @@ def main() -> None:  # noqa: C901 PLR0912 PLR0915  # Ignore too complex warning
 
     options = parser.parse_args()
 
-    # --------------------------------------------------------------------------
-
     if options.show_version:
         sys.stdout.write(f"pip-check version {__version__}\n")
         sys.exit(0)
 
-    current_pip_version = get_pip_version(options)
-    sys.stdout.write(f"Python {sys.version}\n")
-    sys.stdout.write(f"{current_pip_version}\n")
-    sys.stdout.write("\nLoading package versions...\n")
-    sys.stdout.flush()
+    run(options)
 
-    # Unchanged Packages
-    unchanged = []
-    if not options.hide_unchanged:
-        unchanged = get_package_versions(options, outdated_only=False)
-
-    packages = {
-        "major": [],
-        "minor": [],
-        "unknown": [],
-        "unchanged": unchanged,
-    }
-
-    # Fetch all outdated packages and sort them into major/minor/unknown.
-    for package in get_package_versions(options, outdated_only=True):
-        # No version info
-        if "latest_version" not in package or "version" not in package:
-            packages["unknown"].append(package)
-            continue
-
-        try:
-            latest = Version(package["latest_version"])
-            current = Version(package["version"])
-        except ValueError:
-            # Unable to parse the version into anything useful
-            packages["unknown"].append(package)
-            continue
-
-        # If the current version is larger than the latest
-        # (e.g. a pre-release is installed) put it into the unknown section.
-        # Technically its 'unchanged' but I guess its better to have
-        # pre-releases stand out more.
-        if current > latest:
-            packages["unknown"].append(package)
-            continue
-
-        # Current and latest package version is the same. If this happens,
-        # it's likely a bug with the version parsing.
-        if current == latest:
-            packages["unchanged"].append(package)
-            continue
-
-        # Major upgrade (first version number)
-        if current.major < latest.major:
-            packages["major"].append(package)
-            continue
-
-        # Everything else is a minor update
-        packages["minor"].append(package)
-
-    table_data = OrderedDict()
-
-    def cut_version(version: str) -> str:
-        if not version or version == "Unknown":
-            return version
-
-        # Cut version to readable length
-        if not options.show_long_versions and len(version) > version_length + 3:
-            return f"{version[:version_length]}..."
-        return version
-
-    def columns(package_data: dict) -> list[str] | None:
-        # Generate the columns for the table(s) for each package
-        # Name | Current Version | Latest Version | pypi String
-
-        name = package_data.get("name")
-        current_version = package_data.get("version")
-        latest_version = package_data.get("latest_version")
-        help_string = "https://pypi.python.org/pypi/{}".format(package_data["name"])
-
-        if latest_version and options.show_update:
-            help_string = "pip install {user}{name}=={version}".format(
-                user="--user " if options.show_user is True else "",
-                name=name,
-                version=latest_version,
-            )
-
-        return [
-            name,
-            cut_version(current_version) or "Unknown",
-            cut_version(latest_version) or current_version or "Unknown",
-            help_string,
-        ]
-
-    for key, label, _ in [
-        ("major", "Major Release Update", "autored"),
-        ("minor", "Minor Release Update", "autoyellow"),
-        ("unchanged", "Unchanged Packages", "autogreen"),
-        ("unknown", "Unknown Package Release Status", "autoblack"),
-    ]:
-        if packages[key]:
-            if key not in table_data:
-                table_data[key] = []
-
-            (table_data[key].append([label, "Version", "Latest"]),)
-            for line_package in packages[key]:
-                table_data[key].append(columns(line_package))
-
-    # Table output class
-    table_class = (
-        terminaltables.AsciiTable if options.ascii_only else terminaltables.SingleTable
-    )
-
-    for data in table_data.values():
-        out("\n")
-        table = table_class(data)
-        out(table.table)
-        out("\n")
-        sys.stdout.flush()
-
-    if options.show_update:
-        for label in ("major", "minor"):
-            if packages[label]:
-                out(
-                    "\nTo update all {label} releases run:\n\n"
-                    "  {pip_cmd} install --upgrade {user}{packages}\n".format(
-                        label=label,
-                        pip_cmd=options.pip_cmd,
-                        user="--user " if options.show_user is True else "",
-                        packages=" ".join([p["name"] for p in packages[label]]),
-                    )
-                )
-
-
-# ------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     with contextlib.suppress(KeyboardInterrupt):

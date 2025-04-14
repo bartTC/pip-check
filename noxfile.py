@@ -9,9 +9,9 @@ nox.options.default_venv_backend = "uv"
 python_versions = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
 
 
-@nox.session(python=python_versions)
+@nox.session(python=python_versions, name="pip-check-test-py")
 def tests(session: nox.Session) -> None:
-    """Basic testsuite."""
+    """pip-check smoke tests."""
     session.install("--upgrade", "pip", "uv")
     session.install("html5lib==0.999999999", "django==1.10", "pyglet==2.0.dev23")
     session.install(".")
@@ -45,12 +45,12 @@ def tests(session: nox.Session) -> None:
 
 @nox.session
 def readme(session: nox.Session) -> None:
-    """Make sure, the README is valid Markdown."""
+    """Readme Validation."""
     session.install("markdown-it-py")
     session.run("markdown-it", "README.md", "/dev/null", external=True)
 
 
 @nox.session
 def lint(session: nox.Session) -> None:
-    """Lint the project using ruff."""
+    """Ruff codebase linting."""
     session.run("ruff", "check", "src", "noxfile.py", external=True)
