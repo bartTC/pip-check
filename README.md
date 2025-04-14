@@ -58,10 +58,9 @@ options:
 pip-check uses `uv` for local development.
 
 ```
-$ pip install -U uv
-uv sync     # Create a .venv and install dependencies
-uv build    # Build distribution packages
-uv publish  # Publish on Pypi
+uv sync         # Create a .venv and install dependencies
+uv build        # Build distribution packages
+uvx uv-publish  # Publish on Pypi
 ```
 
 ### Testing:
