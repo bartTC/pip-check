@@ -5,6 +5,12 @@ from __future__ import annotations
 import nox
 
 nox.options.default_venv_backend = "uv"
+nox.options.sessions = [
+    "lint",
+    "readme",
+    "pip-check-test-py",
+    "coverage",
+]
 
 python_versions = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
 
@@ -41,6 +47,30 @@ def tests(session: nox.Session) -> None:
     session.run(
         "pip-check", "--cmd=uv pip", "--ascii", "--full-version", "--hide-unchanged"
     )
+
+
+@nox.session
+def coverage(session: nox.Session) -> None:
+    """Run the final coverage report."""
+    session.install("--upgrade", "coverage")
+    session.install("-e", ".")
+    session.run("coverage", "erase")
+    session.run("coverage", "run", "--append", "-m", "pip_check")
+    session.run("coverage", "run", "--append", "-m", "pip_check", "--version")
+    session.run(
+        "coverage",
+        "run",
+        "--append",
+        "-m",
+        "pip_check",
+        "--ascii",
+        "--not-required",
+        "--full-version",
+        "--hide-unchanged",
+        "--show-update",
+    )
+    session.run("coverage", "report")
+    session.run("coverage", "html")
 
 
 @nox.session
