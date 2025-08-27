@@ -88,7 +88,11 @@ def get_pip_version(options: argparse.Namespace) -> str:
                     version string.
 
     """
-    cmd = f"{options.pip_cmd} --help"
+    # uv pip has a different command structure to get the version
+    if "uv pip" in options.pip_cmd:
+        cmd = f"{options.pip_cmd.replace('uv pip', 'uv')} --version"
+    else:
+        cmd = f"{options.pip_cmd} --version"
 
     try:
         cmd_response = subprocess.run(  # noqa: S603

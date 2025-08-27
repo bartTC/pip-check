@@ -1,6 +1,7 @@
 # Changelog
 
 v3.2 (2025-08-27):
+v3.2.1 (2025-08-27):
 
 - Fix 'uv' support to work with latest UV version.
 
