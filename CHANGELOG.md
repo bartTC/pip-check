@@ -1,5 +1,9 @@
 # Changelog
 
+v3.2 (2025-08-27):
+
+- Fix 'uv' support to work with latest UV version.
+
 v3.1 (2025-04-14):
 
 - Adopted **uv** and **hatchling** as the primary build tools.

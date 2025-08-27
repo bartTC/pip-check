@@ -88,7 +88,7 @@ def get_pip_version(options: argparse.Namespace) -> str:
                     version string.
 
     """
-    cmd = f"{options.pip_cmd} --version"
+    cmd = f"{options.pip_cmd} --help"
 
     try:
         cmd_response = subprocess.run(  # noqa: S603
@@ -259,7 +259,7 @@ def run(options: argparse.Namespace) -> None:  # noqa: PLR0912, PLR0915, C901
             packages["unknown"].append(package)
             continue
 
-        # Current and latest package version is the same. If this happens,
+        # The current and latest package version is the same. If this happens,
         # it's likely a bug with the version parsing.
         if current == latest:
             packages["unchanged"].append(package)
@@ -275,7 +275,7 @@ def run(options: argparse.Namespace) -> None:  # noqa: PLR0912, PLR0915, C901
 
     table_data = OrderedDict()
 
-    def cut_version(v: str) -> str:
+    def cut_version(v: str | None) -> str | None:
         if not v or v == "Unknown":
             return v
 

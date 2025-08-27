@@ -1,6 +1,6 @@
 [project]
 name = "pip-check"
-version = "3.1"
+version = "3.2"
 description = "Display installed pip packages and their update status."
 requires-python = ">=3.8"
 dynamic = ["readme"]
