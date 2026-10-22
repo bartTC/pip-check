@@ -80,15 +80,22 @@ def split_command(cmd: str) -> list[str]:
     return [shlex.quote(s) for s in shlex.split(cmd)]
 
 
-def run_pip(cmd: str) -> subprocess.CompletedProcess[str]:
+def run_pip(
+    cmd: str, extra_args: list[str] | None = None
+) -> subprocess.CompletedProcess[str]:
     """
     Run a pip command and return the finished process with its text output.
+
+    `extra_args` are appended to the command as they are, without going
+    through `split_command`. They come from the shell already split, and
+    re-splitting or quoting them could mangle values such as index URLs.
 
     pip-check can't do anything useful once the pip command fails, so this
     prints the reason and exits with status 1 instead of raising. That covers
     a command that can't be started (a typo in `--cmd`, a missing or
     non-executable file) as well as a non-zero exit code, whose empty stdout
-    would otherwise look like an empty package list.
+    would otherwise look like an empty package list. A pip option that pip
+    doesn't know, passed through by the user, ends up here as well.
 
     Exit code 0 doesn't guarantee success, though. pip reports network
     problems only on stderr, so callers that need a working index connection
@@ -96,7 +103,10 @@ def run_pip(cmd: str) -> subprocess.CompletedProcess[str]:
     """
     try:
         cmd_response = subprocess.run(  # noqa: S603
-            split_command(cmd), capture_output=True, check=False, text=True
+            split_command(cmd) + (extra_args or []),
+            capture_output=True,
+            check=False,
+            text=True,
         )
     except OSError as e:
         err(f"Unable to run the pip command `{cmd}`: {e.strerror}\n")
@@ -150,6 +160,12 @@ def get_package_versions(
     as uv if it starts with `uv`. uv gets the same scope flags except `--user`
     and `--local`, which it doesn't have.
 
+    Arguments given after `--` on the command line (`options.pip_args`) are
+    appended to both variants. That's how pre-releases (`--pre`) and other
+    indexes (`--extra-index-url`) get included. pip-check doesn't interpret
+    them, so they have to be valid for the pip or uv in use: uv spells
+    index options differently and has no `--pre` for `pip list`.
+
     Both variants look up every installed package on the index, which makes
     this the slow part of a run. A failing command, a connection problem or
     output that isn't JSON prints an error and exits with status 1.
@@ -170,7 +186,7 @@ def get_package_versions(
         local_arg=pip_local_arg if options.show_local else "",
     )
 
-    cmd_response = run_pip(cmd)
+    cmd_response = run_pip(cmd, options.pip_args)
 
     # pip doesn't fail when PyPI is unreachable: it logs retry warnings to
     # stderr, exits with 0 and prints `[]`, which would read as "all up to date".
@@ -355,14 +371,20 @@ def run(options: argparse.Namespace) -> None:  # noqa: PLR0912, PLR0915, C901
         sys.stdout.flush()
 
     if options.show_update:
+        # The pass-through args are needed here too: without `--pre`, for
+        # example, `pip install --upgrade` never picks the pre-release listed
+        # above. Unlike for the pip calls, quoting is right here, because the
+        # user pastes this into a shell.
+        extra = f"{shlex.join(options.pip_args)} " if options.pip_args else ""
         for label in ("major", "minor"):
             if packages[label]:
                 out(
                     "\nTo update all {label} releases run:\n\n"
-                    "  {pip_cmd} install --upgrade {user}{packages}\n".format(
+                    "  {pip_cmd} install --upgrade {user}{extra}{packages}\n".format(
                         label=label,
                         pip_cmd=options.pip_cmd,
                         user="--user " if options.show_user is True else "",
+                        extra=extra,
                         packages=" ".join([p["name"] for p in packages[label]]),
                     )
                 )
@@ -374,12 +396,19 @@ def main() -> None:
 
     This is the `pip-check` console script's entry point, and `python -m
     pip_check` calls it too. `--version` exits before any pip command runs.
-    Ctrl-C during the pip calls, which are often slow, exits quietly with
+    Everything after the first `--` is split off before argparse runs and
+    stored in `options.pip_args` for `pip list`. Ctrl-C during the pip calls, which are often slow, exits quietly with
     status 130 instead of printing a traceback.
     """
     parser = argparse.ArgumentParser(
+        usage="%(prog)s [options] [-- PIP_ARGS ...]",
         description="A quick overview of all installed packages "
-        "and their update status. Supports `pip` or `uv pip`."
+        "and their update status. Supports `pip` or `uv pip`.",
+        epilog="Arguments after `--` are passed to `pip list` as they are, "
+        "e.g. `pip-check -- --pre` to include pre-releases, or "
+        "`pip-check -- --extra-index-url URL` to also check another index. "
+        "With uv, use uv's options, e.g. `-- --index URL`. They are also added "
+        "to the --show-update command.",
     )
     parser.add_argument(
         "-a",
@@ -452,7 +481,17 @@ def main() -> None:
         help="Show the version of pip-check and exit.",
     )
 
-    options = parser.parse_args()
+    # Everything after `--` goes to `pip list` as it is, so any pip option
+    # works without pip-check having to mirror it. The split happens before
+    # argparse, which would otherwise also accept stray words without `--`.
+    argv = sys.argv[1:]
+    pip_args = []
+    if "--" in argv:
+        separator = argv.index("--")
+        argv, pip_args = argv[:separator], argv[separator + 1 :]
+
+    options = parser.parse_args(argv)
+    options.pip_args = pip_args
 
     if options.show_version:
         sys.stdout.write(f"pip-check version {__version__}\n")

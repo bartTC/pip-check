@@ -53,11 +53,26 @@ def tests(session: nox.Session) -> None:
     # A missing pip executable must fail cleanly, not with a traceback.
     session.run("pip-check", "--cmd=pip-check-missing-pip", success_codes=[1])
 
+    # Everything after `--` goes to `pip list`. --pre is issue #28, and an
+    # option pip doesn't know proves the arguments actually arrive. A stray
+    # word without `--` is still an argparse error (exit 2).
+    session.run("pip-check", "--hide-unchanged", "--show-update", "--", "--pre")
+    session.run("pip-check", "--", "--not-a-pip-option", success_codes=[1])
+    session.run("pip-check", "stray-word", success_codes=[2])
+
     # The uv runs skip -r, -U and -l, which only work with pip.
     session.run("pip-check", "--cmd=uv pip")
     session.run("pip-check", "--cmd=uv pip", "--help")
     session.run(
         "pip-check", "--cmd=uv pip", "--ascii", "--full-version", "--hide-unchanged"
+    )
+    session.run(
+        "pip-check",
+        "--cmd=uv pip",
+        "--hide-unchanged",
+        "--",
+        "--default-index",
+        "https://pypi.org/simple",
     )
 
 
