@@ -120,7 +120,7 @@ wheels = [
 
 [[package]]
 name = "pip-check"
-version = "3.2.1"
+version = "3.3"
 source = { editable = "." }
 dependencies = [
     { name = "packaging" },

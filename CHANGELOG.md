@@ -1,15 +1,17 @@
 # Changelog
 
-Unreleased:
+v3.3 (2026-10-22):
 
-- Test against **Python 3.15**. Python 3.8 and later remain supported.
-- Require `packaging>=20.0`. Older versions lack `Version.major` and made pip-check crash.
-- Use an SPDX license expression (PEP 639) and add project keywords, topics and a changelog link.
-- Limit the sdist to source, docs and tests. It previously included local files such as `.coverage` and `uv.lock`.
+- Pass extra arguments to `pip list` after `--`, e.g. `pip-check -- --pre` to include pre-releases (#28) or `pip-check -- --extra-index-url URL` to also check another index (#30). They're added to the `--show-update` upgrade command too.
 - Report a failing pip command with pip's error message and exit code 1. Previously it showed up as "No outdated packages".
 - A `--cmd` that can't be run (e.g. a typo) now prints an error instead of a traceback.
 - Ctrl-C now exits quietly with code 130 instead of printing a traceback.
-- Pass extra arguments to `pip list` after `--`, e.g. `pip-check -- --pre` to include pre-releases (#28) or `pip-check -- --extra-index-url URL` to also check another index (#30). They're added to the `--show-update` upgrade command too.
+- Require `packaging>=20.0`. Older versions lack `Version.major` and made pip-check crash.
+- The sdist can be built with pip older than 19.3 (the pip that came with Python 3.8), which couldn't parse `pyproject.toml`.
+- Test against **Python 3.15**. Python 3.8 and later remain supported.
+- Use an SPDX license expression (PEP 639) and add project keywords, topics and a changelog link.
+- Limit the sdist to source, docs and tests. It previously included local files such as `.coverage` and `uv.lock`.
+- Releases are published from GitHub Actions using PyPI Trusted Publishing.
 
 v3.2 (2025-08-27):
 v3.2.1 (2025-08-27):
