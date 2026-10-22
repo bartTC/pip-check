@@ -9,6 +9,7 @@ Unreleased:
 - Report a failing pip command with pip's error message and exit code 1. Previously it showed up as "No outdated packages".
 - A `--cmd` that can't be run (e.g. a typo) now prints an error instead of a traceback.
 - Ctrl-C now exits quietly with code 130 instead of printing a traceback.
+- Pass extra arguments to `pip list` after `--`, e.g. `pip-check -- --pre` to include pre-releases (#28) or `pip-check -- --extra-index-url URL` to also check another index (#30). They're added to the `--show-update` upgrade command too.
 
 v3.2 (2025-08-27):
 v3.2.1 (2025-08-27):

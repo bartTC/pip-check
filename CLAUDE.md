@@ -41,6 +41,8 @@ Flow: `main()` parses args, then `run()` does the rest:
 
 Both helpers run pip through `run_pip()`, which prints the error and exits when the command can't start or returns non-zero. They parse `--format=json` output and call `sys.exit()` instead of raising.
 
+**Pass-through arguments:** everything after the first `--` is split off `sys.argv` before argparse runs and stored in `options.pip_args`. It's appended verbatim (without `split_command()`) to both `pip list` calls, and shell-quoted into the `-u` upgrade command. pip-check doesn't validate it: a wrong option fails through `run_pip()`.
+
 **pip vs. uv:** the command templates at the top of the module are separate for pip (`pip_*_cmd`) and uv (`uv_*_cmd`). The uv templates drop `--user`, `--local`, `--retries` and `--disable-pip-version-check`, and since uv has no `--uptodate`, the uv "current" list is a plain `uv pip list`. Flags that only work with pip say "(pip only)" in their help text. The code detects uv in two different ways: `get_package_versions` checks `pip_cmd.startswith("uv")`, while `get_pip_version` checks `"uv pip" in pip_cmd` and rewrites the command to `uv --version`. Keep both in mind when you touch uv handling.
 
 ## Conventions and gotchas
