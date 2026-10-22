@@ -19,7 +19,7 @@ uv run nox -s coverage                   # Coverage report (+ htmlcov/)
 uv run nox -l                            # List sessions
 
 uv build                                 # Build sdist + wheel
-uvx uv-publish                           # Publish to PyPI
+git tag vX.Y && git push origin vX.Y     # Release: .github/workflows/publish.yml publishes to PyPI
 ```
 
 ## Testing model

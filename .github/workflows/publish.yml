@@ -1,0 +1,52 @@
+name: Publish
+
+# A tag is the release trigger: `git tag v3.3 && git push origin v3.3`.
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+# Actions are pinned to commit SHAs, like in test.yml.
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+
+      # A tag that disagrees with pyproject.toml would publish the wrong
+      # version under the right name, and PyPI never lets you reuse it.
+      - name: Tag must match the project version
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          version="$(uv version --short)"
+          echo "tag=$tag project=$version"
+          if [ "$tag" != "$version" ]; then
+            echo "::error::Tag $GITHUB_REF_NAME does not match project version $version"
+            exit 1
+          fi
+
+      # Same suite as test.yml: lint, readme and smoke tests on every
+      # supported Python, so a release never skips the old ones.
+      - run: uv run nox
+
+  publish:
+    needs: test
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/p/pip-check
+    permissions:
+      # Required for PyPI Trusted Publishing. No API token is stored anywhere.
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@c18668ad3cf93ea998bef934396af7bb5c839dc7 # v10.2.0
+      - run: uv build
+      - uses: pypa/gh-action-pypi-publish@dc37677b2e1c63e2034f94d8a5b11f265b73ba33 # v1.14.2
