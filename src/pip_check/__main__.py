@@ -1,8 +1,7 @@
 """
-Entry point for pip-check.
+Run pip-check as `python -m pip_check`.
 
-This script provides a command-line interface to check
-installed Python packages and their update status.
+This works even when the `pip-check` console script isn't on PATH.
 """
 
 from . import main

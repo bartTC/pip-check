@@ -6,6 +6,9 @@ Unreleased:
 - Require `packaging>=20.0`. Older versions lack `Version.major` and made pip-check crash.
 - Use an SPDX license expression (PEP 639) and add project keywords, topics and a changelog link.
 - Limit the sdist to source, docs and tests. It previously included local files such as `.coverage` and `uv.lock`.
+- Report a failing pip command with pip's error message and exit code 1. Previously it showed up as "No outdated packages".
+- A `--cmd` that can't be run (e.g. a typo) now prints an error instead of a traceback.
+- Ctrl-C now exits quietly with code 130 instead of printing a traceback.
 
 v3.2 (2025-08-27):
 v3.2.1 (2025-08-27):

@@ -2,6 +2,7 @@
 name = "pip-check"
 version = "3.2.1"
 description = "Display installed pip packages and their update status."
+# Kept low on purpose: people on old Pythons need pip-check to upgrade.
 requires-python = ">=3.8"
 dynamic = ["readme"]
 license = "MIT"
@@ -18,6 +19,7 @@ classifiers = [
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
+    # Keep in sync with python_versions in noxfile.py.
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -50,6 +52,7 @@ Changelog = "https://github.com/bartTC/pip-check/blob/main/CHANGELOG.md"
 pip-check = "pip_check:main"
 
 [build-system]
+# hatchling 1.27 added support for the PEP 639 `license` and `license-files` fields.
 requires = ["hatchling>=1.27", "hatch-fancy-pypi-readme"]
 build-backend = "hatchling.build"
 
@@ -62,6 +65,8 @@ include = [
   "/noxfile.py",
 ]
 
+# The PyPI description is README.md followed by CHANGELOG.md, so changelog
+# entries show up on PyPI too.
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
 
@@ -74,8 +79,8 @@ text = "\n\n"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 path = "CHANGELOG.md"
 
-# Avoid TOML dotted keys (`lint.select = ...`): pip < 19.3 can't parse
-# them and fails to build the sdist on old Python setups.
+# Avoid TOML dotted keys (`lint.select = ...`) anywhere in this file: pip < 19.3
+# can't parse them and fails to build the sdist on old Python setups.
 [tool.ruff.lint]
 select = ["ALL"]
 ignore = [

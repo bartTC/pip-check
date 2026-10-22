@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import nox
 
+# uv-created venvs come without pip, so sessions that run pip-check against
+# plain `pip` have to install it themselves.
 nox.options.default_venv_backend = "uv"
 nox.options.sessions = [
     "lint",
@@ -12,16 +14,22 @@ nox.options.sessions = [
     "coverage",
 ]
 
+# Keep in sync with the Python classifiers in pyproject.toml.
 python_versions = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
 
 @nox.session(python=python_versions, name="pip-check-test-py")
 def tests(session: nox.Session) -> None:
     """pip-check smoke tests."""
+    # pip, so pip-check's default `pip` is this session's and not the host's;
+    # uv for the `--cmd=uv pip` runs below.
     session.install("--upgrade", "pip", "uv")
+    # Old pins guarantee rows in the update tables: Django and html5lib are
+    # major updates, pyglet's dev release is a minor one.
     session.install("html5lib==0.999999999", "django==1.10", "pyglet==2.0.dev23")
     session.install(".")
 
+    # silent=True makes run() return the output instead of only printing it.
     response = session.run("pip-check", silent=True)
 
     # Make sure, packages are actually listed
@@ -42,6 +50,10 @@ def tests(session: nox.Session) -> None:
     session.run("pip-check", "--user")
     session.run("pip-check", "--local")
 
+    # A missing pip executable must fail cleanly, not with a traceback.
+    session.run("pip-check", "--cmd=pip-check-missing-pip", success_codes=[1])
+
+    # The uv runs skip -r, -U and -l, which only work with pip.
     session.run("pip-check", "--cmd=uv pip")
     session.run("pip-check", "--cmd=uv pip", "--help")
     session.run(
@@ -53,8 +65,12 @@ def tests(session: nox.Session) -> None:
 def coverage(session: nox.Session) -> None:
     """Run the final coverage report."""
     session.install("--upgrade", "coverage")
+    # Editable, so the report points at src/ instead of a copy in site-packages.
     session.install("-e", ".")
+    # Erase first, then --append, so the runs below add up to a single report.
     session.run("coverage", "erase")
+    # No pip in this venv, so these runs inspect whichever pip comes first on
+    # the host's PATH, and coverage numbers vary from machine to machine.
     session.run("coverage", "run", "--append", "-m", "pip_check")
     session.run("coverage", "run", "--append", "-m", "pip_check", "--version")
     session.run(
@@ -83,5 +99,7 @@ def readme(session: nox.Session) -> None:
 @nox.session
 def lint(session: nox.Session) -> None:
     """Ruff codebase linting and format check."""
+    # ruff comes from the project's dev dependencies, not this session's venv,
+    # so it's only on PATH when nox runs via `uv run nox`.
     session.run("ruff", "check", "src", "noxfile.py", external=True)
     session.run("ruff", "format", "--check", "src", "noxfile.py", external=True)
