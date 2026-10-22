@@ -39,7 +39,7 @@ Flow: `main()` parses args, then `run()` does the rest:
 4. Each outdated package is classified with `packaging.version.Version` into `major`, `minor`, `unknown` (unparseable versions, or installed version newer than latest, e.g. pre-releases) or `unchanged`.
 5. One `terminaltables` table is printed per non-empty category: `SingleTable`, or `AsciiTable` with `-a`.
 
-Both helpers shell out with `subprocess.run`, parse `--format=json` output, and call `sys.exit()` directly on failure or empty output instead of raising.
+Both helpers run pip through `run_pip()`, which prints the error and exits when the command can't start or returns non-zero. They parse `--format=json` output and call `sys.exit()` instead of raising.
 
 **pip vs. uv:** the command templates at the top of the module are separate for pip (`pip_*_cmd`) and uv (`uv_*_cmd`). The uv templates drop `--user`, `--local`, `--retries` and `--disable-pip-version-check`, and since uv has no `--uptodate`, the uv "current" list is a plain `uv pip list`. Flags that only work with pip say "(pip only)" in their help text. The code detects uv in two different ways: `get_package_versions` checks `pip_cmd.startswith("uv")`, while `get_pip_version` checks `"uv pip" in pip_cmd` and rewrites the command to `uv --version`. Keep both in mind when you touch uv handling.
 
