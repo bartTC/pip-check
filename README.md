@@ -83,8 +83,19 @@ pip-check uses `uv` for local development.
 ```
 uv sync         # Create a .venv and install dependencies
 uv build        # Build distribution packages
-uvx uv-publish  # Publish on Pypi
 ```
+
+### Releasing:
+
+Releases are published to PyPI by GitHub Actions. Bump `version` in
+`pyproject.toml`, add the CHANGELOG entry, then push a matching tag:
+
+```bash
+$ git tag v3.3 && git push origin v3.3
+```
+
+The Publish workflow checks that the tag matches the project version, runs
+the full test suite and uploads the package using PyPI Trusted Publishing.
 
 ### Testing:
 
