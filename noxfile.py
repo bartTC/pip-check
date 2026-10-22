@@ -12,7 +12,7 @@ nox.options.sessions = [
     "coverage",
 ]
 
-python_versions = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14"]
+python_versions = ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13", "3.14", "3.15"]
 
 
 @nox.session(python=python_versions, name="pip-check-test-py")
@@ -82,5 +82,6 @@ def readme(session: nox.Session) -> None:
 
 @nox.session
 def lint(session: nox.Session) -> None:
-    """Ruff codebase linting."""
+    """Ruff codebase linting and format check."""
     session.run("ruff", "check", "src", "noxfile.py", external=True)
+    session.run("ruff", "format", "--check", "src", "noxfile.py", external=True)

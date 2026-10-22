@@ -37,7 +37,7 @@ pip install pip-check==2.5.2
 
 ```bash
 $ pip-check -h
-usage: __init__.py [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U]
+usage: pip-check [-h] [-a] [-c PIP_CMD] [-l] [-r] [-f] [-H] [-u] [-U] [--version]
 
 A quick overview of all installed packages and their update status. Supports `pip` or `uv pip`.
 
@@ -51,6 +51,7 @@ options:
   -H, --hide-unchanged  Do not show "unchanged" packages.
   -u, --show-update     Show update instructions for updatable packages. (pip only)
   -U, --user            Show only user installed packages. (pip only)
+  --version             Show the version of pip-check and exit.
 ```
 
 ## Local Development

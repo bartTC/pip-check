@@ -1,5 +1,12 @@
 # Changelog
 
+Unreleased:
+
+- Test against **Python 3.15**. Python 3.8 and later remain supported.
+- Require `packaging>=20.0`. Older versions lack `Version.major` and made pip-check crash.
+- Use an SPDX license expression (PEP 639) and add project keywords, topics and a changelog link.
+- Limit the sdist to source, docs and tests. It previously included local files such as `.coverage` and `uv.lock`.
+
 v3.2 (2025-08-27):
 v3.2.1 (2025-08-27):
 

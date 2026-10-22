@@ -3,3 +3,6 @@
 build
 dist
 htmlcov
+.nox
+.coverage
+__pycache__

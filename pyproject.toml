@@ -4,16 +4,20 @@ version = "3.2.1"
 description = "Display installed pip packages and their update status."
 requires-python = ">=3.8"
 dynamic = ["readme"]
-license = { text = "MIT" }
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     { name = "Martin Mahner", email = "martin@mahner.org" }
 ]
+keywords = ["pip", "uv", "packages", "outdated", "upgrade", "dependencies"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
     "Intended Audience :: Developers",
-    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -21,11 +25,14 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
-    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.15",
+    "Topic :: Software Development",
+    "Topic :: System :: Software Distribution",
+    "Topic :: Utilities",
 ]
 dependencies = [
-    "terminaltables",
-    "packaging",
+    "packaging>=20.0",  # Version.major
+    "terminaltables>=3.1",
 ]
 
 [dependency-groups]
@@ -37,13 +44,23 @@ dev = [
 [project.urls]
 Homepage = "https://github.com/bartTC/pip-check/"
 Issues = "https://github.com/bartTC/pip-check/issues"
+Changelog = "https://github.com/bartTC/pip-check/blob/main/CHANGELOG.md"
 
 [project.scripts]
 pip-check = "pip_check:main"
 
 [build-system]
-requires = ["hatchling", "hatch-fancy-pypi-readme"]
+requires = ["hatchling>=1.27", "hatch-fancy-pypi-readme"]
 build-backend = "hatchling.build"
+
+# README.md and CHANGELOG.md are needed to build the wheel from the sdist.
+[tool.hatch.build.targets.sdist]
+include = [
+  "/src",
+  "/README.md",
+  "/CHANGELOG.md",
+  "/noxfile.py",
+]
 
 [tool.hatch.metadata.hooks.fancy-pypi-readme]
 content-type = "text/markdown"
@@ -57,10 +74,11 @@ text = "\n\n"
 [[tool.hatch.metadata.hooks.fancy-pypi-readme.fragments]]
 path = "CHANGELOG.md"
 
-[tool.ruff]
-target-version = "py38"
-lint.select = ["ALL"]
-lint.ignore = [
+# Avoid TOML dotted keys (`lint.select = ...`): pip < 19.3 can't parse
+# them and fails to build the sdist on old Python setups.
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = [
   "D203",     # No blank line before cclass
   "D212",     # Multi-line summary first line
   "E501",     # Line too long (>88)
